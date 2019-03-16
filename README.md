@@ -1,1 +1,1 @@
-# Algorithmic-Design-Homeworks-
+## Homeworks for the algorithmic design course 
