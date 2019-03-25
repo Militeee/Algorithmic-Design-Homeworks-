@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 int naive_matrix_mult(float **C,
                         float **A,
@@ -68,4 +69,18 @@ int same_matrix(float **A, const size_t A_rows, const size_t A_cols,
    }
 
    return 1;
+}
+
+
+void print_matrix_2(float ** m, int size, int size2)
+{
+    for(size_t i = 0; i < size; i++)
+    {
+        for(size_t j = 0; j < size2; j++)
+        {
+            printf("%f ", m[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
 }

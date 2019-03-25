@@ -1,6 +1,7 @@
 #ifndef __MATRIX__
 
 #include <stdlib.h>
+#include <stdio.h>
 
 int naive_matrix_mult(float **C,
                         float **A,
@@ -23,5 +24,9 @@ void deallocate_matrix(int **A, const size_t rows);
 
 int same_matrix(float **A, const size_t A_rows, const size_t A_cols,
 		float **B, const size_t B_rows, const size_t B_cols);
+
+void print_matrix(int ** m, int size);
+void print_matrix_2(float ** m, int size, int size2);
+
 
 #endif // __MATRIX__

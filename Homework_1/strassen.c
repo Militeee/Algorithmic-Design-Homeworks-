@@ -1,5 +1,4 @@
 #include <stdlib.h>
-
 #include "matrix.h"
 
 void sum_matrix_blocks(float **C,

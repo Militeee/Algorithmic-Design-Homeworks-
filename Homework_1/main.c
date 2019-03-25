@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
 #include "matrix.h"
 #include "improved_strassen.h"
 #include "strassen.h"
@@ -41,7 +40,7 @@ int main(int argc, char *argv[]) {
   randomly_fill_matrix(B, n, n);
 
   struct timespec b_time, e_time;
-
+  printf(" \tnaive\tstrassen_improved\tstrassen\n");
   for (size_t i=1; i<=n; i*=2) {
     printf("%ld", i);
 
@@ -62,8 +61,6 @@ int main(int argc, char *argv[]) {
     clock_gettime(CLOCK_REALTIME, &e_time);
 
     printf("\t%lf", get_execution_time(b_time, e_time));
-
-
     printf("\t%d\t", same_matrix(C0, i, i, C1, i, i));
     printf("\t%d\n", same_matrix(C0, i, i, C2, i, i));
 
