@@ -1,68 +1,10 @@
 #include <stdlib.h>
 #include "matrix.h"
+#include "strassen.h"
 
-void sum_matrix_blocks(float **C,
-                       const size_t C_f_row,
-                       const size_t C_f_col,
-                       float ** A,
-                       const size_t A_f_row,
-                       const size_t A_f_col,
-                       float ** B,
-                       const size_t B_f_row,
-                       const size_t B_f_col,
-                       const size_t n)
-{
-  // for all the rows in the blocks
-  for (size_t i=0; i<n; i++) {
 
-    // for all the cols in the blocks
-    for (size_t j=0; j<n; j++) {
-      C[C_f_row+i][C_f_col+j] = A[A_f_row+i][A_f_col+j] +
-                                B[B_f_row+i][B_f_col+j];
-    }
-  }
-}
 
-void sub_matrix_blocks(float **C,
-                       const size_t C_f_row,
-                       const size_t C_f_col,
-                       float ** A,
-                       const size_t A_f_row,
-                       const size_t A_f_col,
-                       float ** B,
-                       const size_t B_f_row,
-                       const size_t B_f_col,
-                       const size_t n)
-{
-  // for all the rows in the blocks
-  for (size_t i=0; i<n; i++) {
-
-    // for all the cols in the blocks
-    for (size_t j=0; j<n; j++) {
-      C[C_f_row+i][C_f_col+j] = A[A_f_row+i][A_f_col+j] -
-                                B[B_f_row+i][B_f_col+j];
-    }
-  }
-}
-
-void naive_aux(float **C, const size_t C_f_row, const size_t C_f_col,
-               float **A, const size_t A_f_row, const size_t A_f_col,
-               float **B, const size_t B_f_row, const size_t B_f_col,
-               const size_t n)
-{
-   for (size_t i=0; i<n; i++) {
-     for (size_t j=0; j<n; j++) {
-       C[C_f_row+i][C_f_col+j] = 0.0;
-       for (size_t k=0; k<n; k++) {
-         C[C_f_row+i][C_f_col+j] += (A[A_f_row+i][A_f_col+k]*
-                                     B[B_f_row+k][B_f_col+j]);
-       }
-     }
-
-   }
-}
-
-void strassen_aux(float **C, const size_t C_f_row, const size_t C_f_col,
+void impr_strassen_aux(float **C, const size_t C_f_row, const size_t C_f_col,
                float **A, const size_t A_f_row, const size_t A_f_col,
                float **B, const size_t B_f_row, const size_t B_f_col,
                const size_t n)
@@ -104,7 +46,7 @@ float ***G=(float ***)malloc(sizeof(float **)*10);
                     n2);
 
     // P1 = A11 x S1
-  strassen_aux(G[0], 0, 0,
+  impr_strassen_aux(G[0], 0, 0,
                A, A1X, AX1,
                C, C1X, CX2,
                n2);
@@ -116,7 +58,7 @@ float ***G=(float ***)malloc(sizeof(float **)*10);
                     n2);
   
   // P2 = S2 x B22
-  strassen_aux(G[1], 0, 0,
+  impr_strassen_aux(G[1], 0, 0,
                C, C1X, CX2,
                B, B2X, BX2,
                n2);
@@ -138,7 +80,7 @@ float ***G=(float ***)malloc(sizeof(float **)*10);
                     n2);
   
   // P3 = S3 x B11
-  strassen_aux(G[2], 0, 0,
+  impr_strassen_aux(G[2], 0, 0,
                C, C2X, CX2,
                B, B1X, BX1,
                n2);
@@ -162,7 +104,7 @@ float ***G=(float ***)malloc(sizeof(float **)*10);
 
 
   // P4 = A22 x S4
-  strassen_aux(C, C1X, CX1,
+  impr_strassen_aux(C, C1X, CX1,
                A, A2X, AX2,
                G[0],0,0,
                n2);
@@ -198,7 +140,7 @@ float ***G=(float ***)malloc(sizeof(float **)*10);
 
 
   // P5 = S5 x S6
-  strassen_aux(G[2], 0, 0,
+  impr_strassen_aux(G[2], 0, 0,
                G[0], 0, 0,
                G[1], 0, 0,
                n2);
@@ -229,7 +171,7 @@ float ***G=(float ***)malloc(sizeof(float **)*10);
 
 
 // P6 = S7 x S8
-  strassen_aux(G[2], 0, 0,
+  impr_strassen_aux(G[2], 0, 0,
                G[0], 0, 0,
                G[1], 0, 0,
                n2);
@@ -255,7 +197,7 @@ float ***G=(float ***)malloc(sizeof(float **)*10);
                     n2);
     
   // P7 = S9 x S10
-  strassen_aux(G[2], 0, 0,
+  impr_strassen_aux(G[2], 0, 0,
                G[0], 0, 0,
                G[1], 0, 0,
                n2);
@@ -273,10 +215,10 @@ float ***G=(float ***)malloc(sizeof(float **)*10);
 
 }
 
-void strassen(float **C,
+void impr_strassen(float **C,
       float **A, float **B, const size_t n)
 {
   
-  strassen_aux(C, 0, 0, A, 0, 0, B, 0, 0, n);
+  impr_strassen_aux(C, 0, 0, A, 0, 0, B, 0, 0, n);
 
 }

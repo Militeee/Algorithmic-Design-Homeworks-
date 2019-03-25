@@ -10,7 +10,7 @@ if len(sys.argv) < 4:
 else: 
     with open("input.txt",'w') as f:
         for r in range(1,int(sys.argv[1])+1):
-            rand = [str(random.randint(1,int(sys.argv[3]))) for x in range(int(sys.argv[2])**r)]
+            rand = [str(random.randint(1,int(sys.argv[3]))) for x in range(int(sys.argv[2])**r + 1)]
             print(int(sys.argv[2])** r,' '.join(rand), file = f)
 
 

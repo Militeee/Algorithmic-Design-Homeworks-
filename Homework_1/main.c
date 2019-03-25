@@ -4,6 +4,8 @@
 
 #include "matrix.h"
 #include "improved_strassen.h"
+#include "strassen.h"
+
 
 #define MAX_ELEM_VALUE 25
 
@@ -29,6 +31,7 @@ int main(int argc, char *argv[]) {
 
   float **C0=allocate_matrix(n,n);
   float **C1=allocate_matrix(n,n);
+  float **C2=allocate_matrix(n,n);
   float **A=allocate_matrix(n,n);
   float **B=allocate_matrix(n,n);
 
@@ -49,17 +52,27 @@ int main(int argc, char *argv[]) {
     printf("\t%lf", get_execution_time(b_time, e_time));
 
     clock_gettime(CLOCK_REALTIME, &b_time);
-    strassen(C1, A, B, i);
+    impr_strassen(C1, A, B, i);
     clock_gettime(CLOCK_REALTIME, &e_time);
 
     printf("\t%lf", get_execution_time(b_time, e_time));
 
-    printf("\t%d\n", same_matrix(C0, i, i, C1, i, i));
+    clock_gettime(CLOCK_REALTIME, &b_time);
+    strassen(C2, A, B, i);
+    clock_gettime(CLOCK_REALTIME, &e_time);
+
+    printf("\t%lf", get_execution_time(b_time, e_time));
+
+
+    printf("\t%d\t", same_matrix(C0, i, i, C1, i, i));
+    printf("\t%d\n", same_matrix(C0, i, i, C2, i, i));
+
   }
 
 
   deallocate_matrix(C0,n);
   deallocate_matrix(C1,n);
+  deallocate_matrix(C2,n);
   deallocate_matrix(A,n);
   deallocate_matrix(B,n);
 

@@ -132,7 +132,7 @@ int main(){
             return -3;
         }
         for (int i = 0; i <= mat_num; i++){
-            scanf("%d", &dim_array[i]);  
+            int err = scanf("%d", &dim_array[i]);  
         }
 
         // calculate optimal parenthetization
@@ -158,8 +158,8 @@ int main(){
         }
 
         //allocate space for the results
-        float** result1 = allocate_matrix_f(dim_array[0], dim_array[mat_num-1]);
-        float** result2 = allocate_matrix_f(dim_array[0], dim_array[mat_num-1]);
+        float** result1 = allocate_matrix_f(dim_array[0], dim_array[mat_num]);
+        float** result2 = allocate_matrix_f(dim_array[0], dim_array[mat_num]);
 
         clock_gettime(CLOCK_REALTIME, &b_time);
         multiply_rec(result1, tensor1, final_mtrx[1], dim_array,0, mat_num-1,1);
@@ -174,7 +174,7 @@ int main(){
         //print_matrix_2(result2, dim_array[0] ,dim_array[mat_num] );
         //print_matrix_2(result1, dim_array[0], dim_array[mat_num]);
         //printf("%d \n",same_matrix(result2,dim_array[0], dim_array[mat_num],
-        //    result1,dim_array[0], dim_array[mat_num]));
+            //result1,dim_array[0], dim_array[mat_num]));
 
 
         for(int i = 0; i < mat_num; i++){

@@ -6,7 +6,7 @@
 
 int main(){
     for(size_t i = 10; i < LIMIT; i*=10){
-        printf("Dimension of array = %d\n", i);
+        printf("Dimension of array = %ld\n", i);
         int* array1 = (int*) malloc(sizeof(int) * i);
         int* array2 = (int*) malloc(sizeof(int) * i);
         int* array3 = (int*) malloc(sizeof(int) * i);
