@@ -9,6 +9,9 @@
 
 void random_fill_array(int* array, size_t n);
 
+void random_fill_arrayF(float* array, size_t n);
+
+
 double get_execution_time(const struct timespec b_time,
                           const struct timespec e_time);
 
@@ -17,5 +20,7 @@ void randomly_fill_matrix(float **A, const size_t A_rows, const size_t A_cols);
 void copy_matrix(float** A, float** B,const size_t A_rows, const size_t A_cols);
 
 void print_array(int* a, size_t size);
+
+void print_array_f(float* a, size_t size);
 
 #endif //__UTILZ__

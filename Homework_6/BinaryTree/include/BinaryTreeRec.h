@@ -472,11 +472,11 @@ template <class K, class V, class F>
 const V& BinaryTree<K,V,F>::remove(BinaryTree::Node* node){
     if(node->_right == nullptr){
         transplant(node, node->_left.get());
-        return node->entry.second;
+        return node;
     }
     if(node->_left == nullptr){
         transplant(node, node->_right.get());
-        return node->entry.second;
+        return node;
     }
     Node* y = first_node(node->_right.get());
     if(node->_parent->_right.get() == node){
@@ -501,6 +501,6 @@ template <class K, class V, class F>
 const V& BinaryTree<K,V,F>::remove(const K& key){
     Iterator s_res = find(key);
     Node* node = s_res.getNode();
-    return remove(node);
+    return remove(node)->entry.second;
 }
 
