@@ -7,7 +7,6 @@
 #include <limits>
 
 
-int inf = std::numeric_limits<int>::max();
 
 struct Node{
     int dest;

@@ -3,7 +3,7 @@
 #include<limits.h>
 #include "utils.h"
 #include "heap.h"
-#define INFINITY INT_MAX
+#define INFINIT INT_MAX
 
 
 // Implement an integer min heap with the methods seen during the lessons
@@ -96,7 +96,7 @@ void decrease_key_min_heap(min_heap* hp, size_t i, int value){
 
 void min_heap_insert(min_heap* hp, int value){
     hp->n++;
-    *(hp->array[hp->n].first) = INFINITY;
+    *(hp->array[hp->n].first) = INFINIT;
     decrease_key_min_heap(hp,hp->n,value);
 }
 
@@ -110,8 +110,8 @@ void print_min_heap(min_heap* hp){
 
 min_heap min_heap_build(pair* array, size_t n){
     min_heap hp = {array,n};
-    for(int i = n; i >= 0; i--)
-        min_heapify(&hp,i);
+    //for(int i = n; i >= 0; i--)
+     //   min_heapify(&hp,i);
     return hp;
     
 }

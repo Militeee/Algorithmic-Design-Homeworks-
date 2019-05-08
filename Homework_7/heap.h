@@ -5,8 +5,7 @@
 #include <stdlib.h>
 #include<stdio.h>
 #include<limits.h>
-#define INFINITY INT_MAX
-
+#include<math.h>
 
 typedef struct int_pair{
     int* first;

@@ -2,9 +2,9 @@
 
 template <class K, class V, class F = std::less<K>>
 
-class RedBlackTree: public BinaryTree{
+class RedBlackTree: public BinaryTree<K,V,F>{
     
-    struct RBnode: struct Node{
+    struct RBnode: public BinaryTree<K,V,F>::Node<K,V,F>{
         bool red = true;
 
         bool is_right_child(){
@@ -46,7 +46,7 @@ class RedBlackTree: public BinaryTree{
         }
 
         RBnode* grandparent(){ return _parent->_parent;}
-    }
+    };
 
     void rotate(RBnode* x, bool is_left);
     void insert(const K& key, const V& value);
