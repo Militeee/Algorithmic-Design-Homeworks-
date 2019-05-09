@@ -9,12 +9,23 @@
  * 
  */
 
+#ifndef __BT_TREE__
+#define __BT_TREE__
+
+
+
 #include <iostream>
 #include <memory>
 #include <algorithm>
 #include <utility>
 #include <string>
 #include <vector>
+
+
+bool reverse_side(bool left){
+        if(left) return false;
+        return true;
+    }
 
 /**
  * @brief Class that implements a binary tree 
@@ -30,12 +41,14 @@
 template <class K, class V, class F = std::less<K>>
 class BinaryTree
 {
+    protected:
     /**
      * @brief A structure that represent the node of the tree
      * A private container that takes the unique pointers to the left and right child, a pointer
      * to the parent and the entry, a pair with key and value.
      */
     struct Node
+
     {   
         /** left child */
         std::unique_ptr<Node> _left;
@@ -43,6 +56,8 @@ class BinaryTree
         std::unique_ptr<Node> _right;
         /** parent node */
         Node* _parent;
+        /** color for RBtree*/
+        bool red = true;
         /** pair with key and value */
         std::pair<const K, V> entry; 
         /** construct a new Node object */
@@ -50,6 +65,44 @@ class BinaryTree
         _left{left}, _right{right}, _parent{parent},entry{std::pair<K,V>(key,value)} {}
         /** default destructor */
         ~Node() noexcept = default;
+
+
+        bool is_right_child(){
+            return _parent != nullptr and _parent->_right == this;
+        }
+
+        Node* sibling(){
+            if(this->is_right_child()) return _left;
+            return _right;
+        }
+
+        Node* uncle(){
+            return this->_parent->sibling();
+        }
+
+        Node* get_child(bool left){
+            if(left) return _left.get();
+            return _right.get();
+        }
+
+
+        
+
+        void set_child(bool left, Node** y){
+            if(left){ 
+                _left->_left.release();
+                 _left->_right.release();
+                _left.reset(y);
+            
+            }
+            else {
+                _right->_left.release();
+                 _right->_right.release();
+                _right.reset(y);
+            }
+        }
+
+        Node* grandparent(){ return _parent->_parent;}
     };
     /** Unique pointer to the root */
     std::unique_ptr<Node> root = nullptr;
@@ -129,11 +182,7 @@ class BinaryTree
     BinaryTree& operator=(const BinaryTree& bt);
     BinaryTree(BinaryTree&& bt) noexcept = default;
     BinaryTree& operator=(BinaryTree&& bt) noexcept = default;
-/**
- * @brief These functions works only if you deefine __TESTBTFUN__ and include "TestFunctions.h"
- * 
- */
-#ifdef __TESTBTFUN__
+
     /**
      * @brief Finds out if the tree is balanced
      * 
@@ -156,7 +205,6 @@ class BinaryTree
      * @return Node* a pointer to the root node
      */
     Node* root_get() {return root.get();};
-#endif
 
 
     //clear the content of the tree
@@ -504,3 +552,4 @@ const V& BinaryTree<K,V,F>::remove(const K& key){
     return remove(node)->entry.second;
 }
 
+#endif //__BT_TREE__//
