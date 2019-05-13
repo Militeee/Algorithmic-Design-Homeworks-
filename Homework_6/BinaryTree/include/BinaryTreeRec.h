@@ -23,8 +23,7 @@
 
 
 bool reverse_side(bool left){
-        if(left) return false;
-        return true;
+        return !left;
     }
 
 /**
@@ -68,17 +67,19 @@ class BinaryTree
 
 
         bool is_right_child(){
-            return _parent != nullptr and _parent->_right == this;
+            return (_parent != nullptr && (_parent->_right.get() == this));
         }
 
         Node* sibling(){
-            if(this->is_right_child()) return _left;
-            return _right;
+            if(this->is_right_child()) return _parent->_left.get();
+            return _parent->_right.get();
         }
 
         Node* uncle(){
-            return this->_parent->sibling();
+            return _parent->sibling();
         }
+
+
 
         Node* get_child(bool left){
             if(left) return _left.get();
@@ -88,18 +89,30 @@ class BinaryTree
 
         
 
-        void set_child(bool left, Node** y){
+        void set_child(bool left, Node* y){
             if(left){ 
+                if(_left == nullptr){
+                    _left.reset(y);
+                }
+                else{
                 _left->_left.release();
                  _left->_right.release();
                 _left.reset(y);
-            
+                }
             }
             else {
+                if(_right == nullptr){
+                    _right.reset(y);
+                }
+                
+                else{
                 _right->_left.release();
                  _right->_right.release();
                 _right.reset(y);
+                }
             }
+            if(y != nullptr)
+                y->_parent = this;
         }
 
         Node* grandparent(){ return _parent->_parent;}
@@ -151,7 +164,8 @@ class BinaryTree
      */
     void copy_util(const BinaryTree::Node& old, std::unique_ptr<Node>& copied);
     void transplant(BinaryTree::Node* x, BinaryTree::Node* y);
-    const V& remove(Node* node);
+    Node* remove(Node* node);
+
 
 
     public:
@@ -206,7 +220,7 @@ class BinaryTree
      */
     Node* root_get() {return root.get();};
 
-
+    
     //clear the content of the tree
     void clear() {root.reset();}
 
@@ -492,8 +506,10 @@ void BinaryTree<K,V,F>::balance(std::vector<std::pair<const K, V>>& list, int be
 template <class K, class V, class F>
 void BinaryTree<K,V,F>::transplant(BinaryTree::Node* x, BinaryTree::Node* y){
   
-    if (x->_parent == nullptr)
+    if (x->_parent == nullptr){
+        this->root.release();
         this->root.reset(y);
+    }
     else{
       
         if(x->_parent->_right.get() == x){
@@ -517,7 +533,7 @@ void BinaryTree<K,V,F>::transplant(BinaryTree::Node* x, BinaryTree::Node* y){
 
 
 template <class K, class V, class F>
-const V& BinaryTree<K,V,F>::remove(BinaryTree::Node* node){
+ typename BinaryTree<K,V,F>::Node* BinaryTree<K,V,F>::remove(BinaryTree::Node* node){
     if(node->_right == nullptr){
         transplant(node, node->_left.get());
         return node;
@@ -551,5 +567,20 @@ const V& BinaryTree<K,V,F>::remove(const K& key){
     Node* node = s_res.getNode();
     return remove(node)->entry.second;
 }
+
+template<class K, class V, class F>
+int BinaryTree<K,V,F>::height(Node* node) {
+        return (node == nullptr) ? 0: 1 + std::max(height(node->_left.get()),height(node->_right.get()));
+}
+
+template<class K, class V, class F>
+bool BinaryTree<K,V,F>::isBalanced(Node* node) {
+    return (node == NULL) ||
+                (isBalanced(node->_left.get()) &&
+                isBalanced(node->_right.get()) &&
+                std::abs(height(node->_left.get()) - height(node->_right.get())) <=1);
+}
+
+
 
 #endif //__BT_TREE__//
