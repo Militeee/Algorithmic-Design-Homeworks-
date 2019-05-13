@@ -22,7 +22,7 @@ int main(){
         int selected = select_i(array1,i/3 + 1, 0, i-1);
         clock_gettime(CLOCK_REALTIME, &e_time);
         printf("Selection of %dth element  \t%lf\n",(int)i/3 + 1, get_execution_time(b_time, e_time) );
-        printf("%dth element=%d\n",i/3 + 1,selected);
+        printf("%ldth element=%d\n",i/3 + 1,selected);
         quickSort(array1,0, i-1);
         print_array(array1,i);
 

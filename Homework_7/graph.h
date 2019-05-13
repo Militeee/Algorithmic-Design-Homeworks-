@@ -16,7 +16,7 @@ struct Node{
 
 
 class Graph{
-    
+    // graph implemented as adjacency list
     std::vector<std::string> color;
     std::vector<int> predecessors;
     std::vector<int> distance; 

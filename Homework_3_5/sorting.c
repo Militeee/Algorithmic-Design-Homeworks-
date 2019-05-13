@@ -29,6 +29,8 @@ int partition(int* array, int begin, int end, int pivot){
     swap(array, begin, pivot);
     // change the indexes to correctly find the pivot
     pivot = begin;
+    // deal with duplicates
+    int right = 0;
     // start from comparing begin and end till they end goes after begin
     while(begin <= end){
         //if I'm in the first part and I'm grater than pivot, swap me to the end
@@ -36,6 +38,15 @@ int partition(int* array, int begin, int end, int pivot){
             swap(array,begin,end);
             // reduce the end index
             end--;
+        }
+        // deal with duplicates assigning randomly the element on the left or on the right
+        else if(array[begin] == array[pivot]){
+            if(right) {
+               swap(array,begin,end);
+                end--; 
+                right = 0;
+            }
+            else {begin++; right = 1;}
         }
         // else I'm in the right place
         else
@@ -173,31 +184,39 @@ void bucketSort(float* array, int dim){
 
 // select the approx median pivot
 int select_pivot(int* array, int begin, int end){
+    // find the number of chunks with dimension 5
     int chunks = (end - begin)/5 + 1;
+    // if the chunk is only one return his median
     if(end-begin+1 <= 5){
         quickSort(array, begin, end);
         return (begin+end)/2;
     }
+    // set a counter to iterate through the chunks
     int cc=begin+4;
+    // sort all the chunks
     while( cc < end - 5){
         quickSort(array,cc-4,cc);
         if(cc+5 >= end - 5) cc=end;
         else cc+=5;
     }
+    // find the median of each chunk and put it at the star of the array
     int j = begin+5;
     for(int i = begin; i < chunks; i++){
-        swap(array, i, (j+i*5)/ 2 );
+        swap(array, i, (j+i*5)/2 );
         if(j+5 >= end)   j = end;
         else j+=5;
     }
     int res;
+    // iterate till you have just one chunk
     res = select_pivot(array,begin,begin+chunks);
     return res;
 }
 
 int select_i(int* array, int i, int begin, int end){
+    // select the pivot and partition around it
     int j = select_pivot(array, begin,end);
     int k = partition(array,begin,end,j);
+    // if the pivot is in the right place return it, otherwise search in the right half
     if(i == k+1)
         return array[k];
     if(i < k+1)
