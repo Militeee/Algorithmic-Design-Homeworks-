@@ -1,7 +1,8 @@
 #include <iostream>
 #include <ctime>
+#include <cstdlib>
 #include "dijkstra.h"
-#define LIM 100000
+#define LIM 10000
 
 int main(){
     struct timespec b_time, e_time;
@@ -88,19 +89,22 @@ int main(){
     for(int i = 1; i < gp4.size(); i++)
         printPath(gp4, i,0);
 
-
+    std::cout << "For a (not so) randomly generated graph" << std::endl;
+    // test the time on a quite sparse graph
     for(int j = 10; j < LIM; j = j * 10){
         Graph gp5{};
         for(int i = 0; i < j; i ++ )
             for(int k = 0; k < j; k ++){
-                if(i == k+1)
+                if(abs(i - k) < 3)
                     gp5.addEdge(i,k, i*2 + k*3 + 4);
+                    gp5.addEdge(k,i, i + k*2 + 4);
             }
         Graph gp6{};
         for(int i = 0; i < j; i ++ )
             for(int k = 0; k < j; k ++){
-                if(i == k+1)
+                if(abs(i - k) < 3)
                 gp6.addEdge(i,k, i*2 + k*3 + 4);
+                gp5.addEdge(k,i, i + k*2 + 4);
             }
 
         clock_gettime(CLOCK_REALTIME, &b_time);

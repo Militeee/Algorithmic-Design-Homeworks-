@@ -16,6 +16,7 @@ vector new_vector(int dim, int i){
     return res;
 }
 
+// basically creates a vector of vectors
 vector* buckets_initialize(int dim){
     vector* res = (vector*) malloc(sizeof(vector) * dim);
     for(int i=0;i < dim; i++)
@@ -23,6 +24,7 @@ vector* buckets_initialize(int dim){
     return res;
 }
 
+// resize of a factor of 2 every time I'm out of bound
 void resize(vector* vec){
     float *new_array = malloc(sizeof(float)*vec->real_dim*2);
     for(int i = 0; i < vec->real_dim; i++)

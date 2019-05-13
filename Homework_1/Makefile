@@ -2,7 +2,7 @@ SRC = improved_strassen.c main.c matrix.c strassen.c
 
 all: strassen.x
 
-strassen.x:  $(SRC)
+main.x:  $(SRC)
 	gcc -O3 $^ -o $@
 
 clean:

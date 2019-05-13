@@ -49,6 +49,7 @@ void swap_min_heap(min_heap* hp, size_t i, size_t m){
 }
 
 /*
+//recursive version
 void min_heapify(min_heap* hp, size_t i){
     size_t m = i;
     size_t child[2] ={left(i), right(i)};
@@ -64,6 +65,7 @@ void min_heapify(min_heap* hp, size_t i){
 }
 */
 
+// iterative version
 void min_heapify(min_heap* hp, size_t i){
     size_t m = i,k = -1;
     while(k != m)
@@ -71,8 +73,10 @@ void min_heapify(min_heap* hp, size_t i){
         k = m;
         size_t child[2] ={left(k), right(k)};
         for(size_t j = 0; j < 2 ; j++)
+        // if I'm bigger than my children m becomes his indes
             if(is_valid_node(hp, child[j]) && hp->array[child[j]] <= hp->array[m])
                 m = child[j];
+        // k is equal to my index, so if I'm not the minimum in my family, swap me with the minimum
         if (k != m)
             swap_min_heap(hp,k,m);
     }
@@ -81,8 +85,10 @@ void min_heapify(min_heap* hp, size_t i){
 
 int remove_minimum(min_heap* hp){
     int min = hp->array[0];
+    // swap the minimum with the rightmost occurence
     hp->array[0] = hp->array[hp->n];
     hp->n--;
+    // recover the heap properties
     min_heapify(hp,0); 
     return min;
 }
@@ -91,6 +97,8 @@ void decrease_key_min_heap(min_heap* hp, size_t i, int value){
     if(hp->array[i] <= value)
         printf("%d is not smaller than %d\n",value, hp->array[i]);
     hp->array[i] = value;
+    // climb back to put me in the new right place, comparing
+    // me with my parent 
     while(!is_root(i) && hp->array[i] <= hp->array[parent(i)]){
         swap_min_heap(hp,i,parent(i));
         i = parent(i);
@@ -99,6 +107,8 @@ void decrease_key_min_heap(min_heap* hp, size_t i, int value){
 
 void min_heap_insert(min_heap* hp, int value){
     hp->n++;
+    // insert a node with the maximum value and then
+    // decrease it to the choosen one 
     hp->array[hp->n] = INFINITY;
     decrease_key_min_heap(hp,hp->n,value);
 }
@@ -110,6 +120,7 @@ void print_min_heap(min_heap* hp){
 
 min_heap min_heap_build(int* array, size_t n){
     min_heap hp = {array,n};
+    // build a valid heap
     for(int i = n; i >= 0; i--)
         min_heapify(&hp,i);
     return hp;

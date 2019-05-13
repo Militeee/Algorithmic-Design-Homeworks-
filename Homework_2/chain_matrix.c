@@ -70,6 +70,7 @@ void multiply_rec(float** result, float*** tensor, int **S, int *dim_num,int i, 
     }
     else{
         int k;
+        // way to choose if use the best parenthesization or start from the middle
         if(naive)
             k = (i+j)/2;
         else
