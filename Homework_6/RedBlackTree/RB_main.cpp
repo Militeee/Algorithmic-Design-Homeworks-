@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 #include <chrono>
-#define LIM 10
+#define LIM 20
 
 int main(int arcv, char *argv[])
 {
@@ -14,29 +14,41 @@ int main(int arcv, char *argv[])
     std::vector<double> random;
 	for(int i = 0; i<LIM; i++)
 		random.push_back(i);
-	std::random_shuffle ( random.begin(), random.end() );
+	//std::random_shuffle ( random.begin(), random.end() );
     int balanced = 1;
     RedBlackTree<const int, double> rbt;
-    
+    int i = 1;
     for(auto e : random)
 	{
-		std::cout << e << std::endl;
+        //if(i == 6) break;
+        //std::cout << i << std::endl;
         rbt.insert(e,e);
-        
-        /*
-        if(rbt.isRBvalid(rbt.root_get()) != true){
-            balanced = 0;
-            break;
-        }
-        */
-        
+       
+        //i++;
 	}
+    rbt.printTree(rbt.root_get());
+
+
+    std::random_shuffle ( random.begin(), random.end() );
+    for(auto e : random)
+    {
+        if(i == 5) break;
+        std::cout << i << std::endl;
+        rbt.remove(e);
+        i++;
+    }
+
+
+     if(rbt.isRBvalid(rbt.root_get()) != true){
+            balanced = 0;
+        }
+
+    rbt.printTree(rbt.root_get());
 
     if(balanced)
         std::cout<< "Bravo!\n" << std::endl;
     else
         std::cout<< "Buuu!\n" << std::endl;
 
-    std::cout << rbt;
 
 }

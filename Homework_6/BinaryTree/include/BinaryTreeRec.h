@@ -13,7 +13,7 @@
 #define __BT_TREE__
 
 
-
+#include<queue>
 #include <iostream>
 #include <memory>
 #include <algorithm>
@@ -50,9 +50,9 @@ class BinaryTree
 
     {   
         /** left child */
-        std::unique_ptr<Node> _left;
+        Node* _left;
         /** right child */
-        std::unique_ptr<Node> _right;
+        Node* _right;
         /** parent node */
         Node* _parent;
         /** color for RBtree*/
@@ -67,12 +67,12 @@ class BinaryTree
 
 
         bool is_right_child(){
-            return (_parent != nullptr && (_parent->_right.get() == this));
+            return (_parent != nullptr && (_parent->_right == this));
         }
 
         Node* sibling(){
-            if(this->is_right_child()) return _parent->_left.get();
-            return _parent->_right.get();
+            if(this->is_right_child()) return _parent->_left;
+            return _parent->_right;
         }
 
         Node* uncle(){
@@ -82,34 +82,25 @@ class BinaryTree
 
 
         Node* get_child(bool left){
-            if(left) return _left.get();
-            return _right.get();
+            if(left) return _left;
+            return _right;
         }
 
 
-        
+        void destroy(){
+            if(this->_right != nullptr) this->_right->destroy();
+            if(this->_left != nullptr) this->_left->destroy();
+            delete this;
+
+        }
 
         void set_child(bool left, Node* y){
             if(left){ 
-                if(_left == nullptr){
-                    _left.reset(y);
-                }
-                else{
-                _left->_left.release();
-                 _left->_right.release();
-                _left.reset(y);
-                }
+                _left=y;
+                //std::cout << "Cane"<< std::endl;
             }
             else {
-                if(_right == nullptr){
-                    _right.reset(y);
-                }
-                
-                else{
-                _right->_left.release();
-                 _right->_right.release();
-                _right.reset(y);
-                }
+                _right = y;
             }
             if(y != nullptr)
                 y->_parent = this;
@@ -118,7 +109,7 @@ class BinaryTree
         Node* grandparent(){ return _parent->_parent;}
     };
     /** Unique pointer to the root */
-    std::unique_ptr<Node> root = nullptr;
+    Node* root = nullptr;
     /**
      * @brief A function to calculate the first node (following the key order)
      * @return Node* a pointer to the first node
@@ -136,12 +127,12 @@ class BinaryTree
     * This function will return also the correct parent to assign to the node in the case of insertion.
     * The correct parent is the first ancestor which key is greater than the actual node's key.
     *
-    * @tparam std::unique_ptr<Node>& reference to a unique pointer to a node
+    * @tparam Node*& reference to a unique pointer to a node
     * @tparam const K& reference to the key
     * @tparam Node* pointer to the right parent for the insertion
-    * @return std::pair< std::unique_ptr<Node>&, Node* > pair with the reference to the target branch and the pointer to the correct parent
+    * @return std::pair< Node*&, Node* > pair with the reference to the target branch and the pointer to the correct parent
     */
-    std::pair< std::unique_ptr<Node>&, Node* > search (std::unique_ptr<Node>& node,const K& key, Node* old );
+    Node*  search (const K& key);
 
     /**
     * @brief auxiliary recursive function that implements the balancing algorithm used in the balance() function
@@ -162,7 +153,7 @@ class BinaryTree
      * order it finds them in the tree with root = old.  
      * @param old the node from which to start the copy. If is root then it copy an entire tree, else just a subtree
      */
-    void copy_util(const BinaryTree::Node& old, std::unique_ptr<Node>& copied);
+    void copy_util(const BinaryTree::Node& old, Node*& copied);
     void transplant(BinaryTree::Node* x, BinaryTree::Node* y);
     Node* remove(Node* node);
 
@@ -170,7 +161,6 @@ class BinaryTree
 
     public:
 
-    using s_pair = std::pair<std::unique_ptr<typename BinaryTree<K,V,F>::Node>&,typename BinaryTree<K,V,F>::Node*>;
 
     /**
      * @brief Construct a new Binary Tree object
@@ -180,12 +170,17 @@ class BinaryTree
      * @brief Destroy the Binary Tree object
      * 
      */
-    ~BinaryTree() noexcept = default;
+    ~BinaryTree() {
+        if(root != nullptr)
+            root->destroy();
+    }
     /**
      * @brief Creates a deep copy of a binary tree
      * 
      * @param bt the tree to be copied
      */
+
+
     BinaryTree (const BinaryTree& bt){this->copy_util(*bt.root, this->root);}
     /**
      * @brief Copy assignement
@@ -218,11 +213,11 @@ class BinaryTree
      * 
      * @return Node* a pointer to the root node
      */
-    Node* root_get() {return root.get();};
+    Node* root_get() {return root;};
 
     
     //clear the content of the tree
-    void clear() {root.reset();}
+    void clear() {root->destroy();}
 
     /**
     * @brief function that balance the tree
@@ -319,7 +314,7 @@ class BinaryTree
      */
     Iterator find(const K& key)
     {
-        Iterator it = Iterator(search(root,key,nullptr).first.get());
+        Iterator it = Iterator(search(key));
         return it;
     }
     /**
@@ -341,6 +336,9 @@ class BinaryTree
     
     const V& remove(const K& key);
 
+    void printTree(Node* root);
+
+
     template <class k,class v, class f> 
     /**
      * @brief Overloading of the operator<< for printing and writing on files
@@ -349,7 +347,6 @@ class BinaryTree
      */
     friend std::ostream& operator<<(std::ostream&, const BinaryTree<k,v,f>&);
 
-   
 };
 
 template <class K, class V, class F>
@@ -381,9 +378,9 @@ typename BinaryTree<K,V,F>::Iterator& BinaryTree<K,V,F>::Iterator::operator++()
 {
      if(pointed->_right)
     {   
-        pointed = pointed->_right.get();
+        pointed = pointed->_right;
         while(pointed->_left)
-            pointed = pointed->_left.get();
+            pointed = pointed->_left;
         return (*this);
     }
     auto key = pointed->entry.first; 
@@ -398,10 +395,10 @@ template <class K, class V, class F>
 typename BinaryTree<K,V,F>::Node* BinaryTree<K,V,F>::first_node(typename BinaryTree<K,V,F>::Node* node) const
 {
     if(node == nullptr)
-        node = root.get();
+        node = root;
     //find the leftmost node
     while(node->_left != nullptr)
-        node = node->_left.get();
+        node = node->_left;
     return node;
 }
 
@@ -415,9 +412,9 @@ class BinaryTree<K,V,F>::ConstIterator : public BinaryTree<K,V,F>::Iterator
 };
 
 template <class K, class V, class F>
-void BinaryTree<K,V,F>::copy_util(const BinaryTree::Node& old, std::unique_ptr<BinaryTree::Node>& copied )
+void BinaryTree<K,V,F>::copy_util(const BinaryTree::Node& old, Node*& copied )
 {
-    copied.reset(new Node(old.entry.first, old.entry.second, old._parent));
+    copied = new Node(old.entry.first, old.entry.second, old._parent);
     if(old._left != nullptr)
         copy_util(*old._left, copied->_left);
     if(old._right != nullptr)
@@ -427,32 +424,70 @@ void BinaryTree<K,V,F>::copy_util(const BinaryTree::Node& old, std::unique_ptr<B
 template <class K, class V, class F>
 BinaryTree<K,V,F>& BinaryTree<K,V,F>::operator=(const BinaryTree& bt)
 {
-    root.reset();
+    root = nullptr;
     auto tmp = bt;
     (*this) = std::move(tmp);
     return *this;
 }
 
 template <class K, class V,class F>
-std::pair<typename BinaryTree<K,V,F>::Iterator,bool> BinaryTree<K,V,F>::insert(const K& key, const V& value)
+std::pair<typename BinaryTree<K,V,F>::Iterator,bool> BinaryTree<K,V,F>::insert (const K& key, const V& value)
 {
-    BinaryTree<K, V, F>::s_pair node_pair = search(root,key,nullptr);
-    // Look if the key is already present and update the second return value
-    bool modified = node_pair.first ==nullptr;
-    // if not present insert the new node
-    if(modified) node_pair.first.reset(new Node(key,value,node_pair.second));
-    return std::pair<Iterator,bool>{Iterator{node_pair.first.get()},modified};
+	
+	if(root == nullptr)
+	{
+		root = new Node(key,value,nullptr);
+		return std::pair<Iterator,bool>{Iterator{root},true};
+	}
+	Node* node = search(key);
+    
+	if(!cmp(node->entry.first, key) && !cmp(key, node->entry.first))
+		return std::pair<Iterator,bool>{Iterator{node},false};
+		
+
+	if(cmp(node->entry.first, key))
+	{
+
+		node->_right= new Node(key,value,node);
+		return std::pair<Iterator,bool>{Iterator{node->_right},true};
+	}
+	else 
+	{
+		node->_left=new Node(key,value,node);
+        return std::pair<Iterator,bool>{Iterator{node->_left},true};
+	}
+	
+
+	
 }
 
-template <class K, class V,class F>
-typename BinaryTree<K, V, F>::s_pair BinaryTree<K,V,F>::search (std::unique_ptr<typename BinaryTree<K,V,F>::Node>& node, const K& key, typename BinaryTree<K,V,F>::Node* old)
+template <class K, class V, class F>
+typename BinaryTree<K,V,F>::Node* BinaryTree<K,V,F>::search (const K& key)
 {
-    //stop when the key is present or we have reached the right insertion node
-    if(node == nullptr || (!cmp(node->entry.first,key) && !cmp(key,node->entry.first)) )
-        return BinaryTree<K, V, F>::s_pair{node,old};       
-    else 
-        //if twe are on a right node, our parent is our father parent
-        return cmp(node->entry.first, key) ? search(node->_right,key, node.get()) : search(node->_left,key, node.get());
+	Node* node = root;
+	auto k = node->entry.first;
+	while(node->_left != nullptr || node->_right != nullptr)
+	{
+		if(!cmp(k,key) && !cmp(key,k))
+			return node;
+
+    		if(cmp(k,key))
+        	{
+			if(node->_right)
+				node=node->_right;
+			else return node;
+        	}
+	
+		if(cmp(key,k))
+        	{
+			if(node->_left)
+				node=node->_left;
+			else return node;
+        	}
+		k = node->entry.first;
+	}
+	
+	return node;
 }
 
 template <class K, class V, class F>
@@ -507,20 +542,17 @@ template <class K, class V, class F>
 void BinaryTree<K,V,F>::transplant(BinaryTree::Node* x, BinaryTree::Node* y){
   
     if (x->_parent == nullptr){
-        this->root.release();
-        this->root.reset(y);
+        this->root = y;
+
     }
     else{
       
-        if(x->_parent->_right.get() == x){
-            x->_parent->_right->_left.release();
-            x->_parent->_right->_right.release();
-            x->_parent->_right.reset(y);
+        if(x->_parent->_right == x){
+            x->_parent->_right = y;
         }
         else{
-            x->_parent->_left->_left.release();
-            x->_parent->_left->_right.release();
-            x->_parent->_left.reset(y);
+
+            x->_parent->_left = y ;
         }
     }
 
@@ -535,25 +567,22 @@ void BinaryTree<K,V,F>::transplant(BinaryTree::Node* x, BinaryTree::Node* y){
 template <class K, class V, class F>
  typename BinaryTree<K,V,F>::Node* BinaryTree<K,V,F>::remove(BinaryTree::Node* node){
     if(node->_right == nullptr){
-        transplant(node, node->_left.get());
+        transplant(node, node->_left);
         return node;
     }
     if(node->_left == nullptr){
-        transplant(node, node->_right.get());
+        transplant(node, node->_right);
         return node;
     }
-    Node* y = first_node(node->_right.get());
-    if(node->_parent->_right.get() == node){
-        node->_parent->_right->_left.release();
-        node->_parent->_right->_right.release();
-        node->_parent->_right.reset(new Node(y->entry.first,
-        y->entry.second,node->_parent));
+    Node* y = first_node(node->_right);
+    if(node->_parent->_right == node){
+
+        node->_parent->_right=new Node(y->entry.first,
+        y->entry.second,node->_parent);
     }
     else{
-        node->_parent->_left->_left.release();
-        node->_parent->_left->_right.release();
-        node->_parent->_left.reset(new Node(y->entry.first,
-        y->entry.second,node->_parent));
+        node->_parent->_left = new Node(y->entry.first,
+        y->entry.second,node->_parent);
     }
     return remove(y);  
 
@@ -570,16 +599,47 @@ const V& BinaryTree<K,V,F>::remove(const K& key){
 
 template<class K, class V, class F>
 int BinaryTree<K,V,F>::height(Node* node) {
-        return (node == nullptr) ? 0: 1 + std::max(height(node->_left.get()),height(node->_right.get()));
+        return (node == nullptr) ? 0: 1 + std::max(height(node->_left),height(node->_right));
 }
 
 template<class K, class V, class F>
 bool BinaryTree<K,V,F>::isBalanced(Node* node) {
     return (node == NULL) ||
-                (isBalanced(node->_left.get()) &&
-                isBalanced(node->_right.get()) &&
-                std::abs(height(node->_left.get()) - height(node->_right.get())) <=1);
+                (isBalanced(node->_left) &&
+                isBalanced(node->_right) &&
+                std::abs(height(node->_left) - height(node->_right)) <=1);
 }
+
+template<class K, class V, class F>
+void BinaryTree<K,V,F>::printTree(Node* root)  
+{  
+    if (root == NULL) return;  
+  
+    std::queue<Node *> q;  
+  
+    q.push(root);  
+  
+    while (q.empty() == false)  
+    {  
+        
+        int nodeCount = q.size();  
+  
+    
+        while (nodeCount > 0) 
+        {  
+            Node* node = q.front();  
+            std::cout << node->entry.first << " ";  
+            q.pop();  
+            if (node->_left != nullptr)  
+                q.push(node->_left);  
+            if (node->_right != nullptr)  
+                q.push(node->_right);  
+            nodeCount--;  
+        }  
+         std::cout << std::endl;  
+    }  
+}  
+  
 
 
 
