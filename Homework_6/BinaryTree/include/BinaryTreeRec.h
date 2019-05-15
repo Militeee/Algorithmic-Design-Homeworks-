@@ -58,9 +58,9 @@ class BinaryTree
         /** color for RBtree*/
         bool red = true;
         /** pair with key and value */
-        std::pair<const K, V> entry; 
+        std::pair< K, V> entry; 
         /** construct a new Node object */
-        Node(const K& key, const V& value, Node* parent,Node* left = nullptr, Node* right = nullptr): 
+        Node( K& key,  V& value, Node* parent,Node* left = nullptr, Node* right = nullptr): 
         _left{left}, _right{right}, _parent{parent},entry{std::pair<K,V>(key,value)} {}
         /** default destructor */
         ~Node() noexcept = default;
@@ -325,16 +325,16 @@ class BinaryTree
      * @param value the value of the new node
      * @return std::pair<Iterator,bool> a pair with an iterator to the inserted (or where the key is already present) node and a bool that indicates if the new has been added
      */
-    std::pair<Iterator,bool> insert (const K& key, const V& value);
+    std::pair<Iterator,bool> insert ( K& key,  V& value);
     /**
      * @brief An insert which takes directly an std::pair with the right types
      * 
      * @param p the std::pair to be added in the new node 
      * @return std::pair<Iterator,bool> saame as the other insert()
      */
-    std::pair<Iterator,bool> insert (std::pair<const K&, const V&> p) {return insert(p.first,p.second);}
+    std::pair<Iterator,bool> insert (std::pair< K&,  V&> p) {return insert(p.first,p.second);}
     
-    const V& remove(const K& key);
+     V& remove( K& key);
 
     void printTree(Node* root);
 
@@ -431,7 +431,7 @@ BinaryTree<K,V,F>& BinaryTree<K,V,F>::operator=(const BinaryTree& bt)
 }
 
 template <class K, class V,class F>
-std::pair<typename BinaryTree<K,V,F>::Iterator,bool> BinaryTree<K,V,F>::insert (const K& key, const V& value)
+std::pair<typename BinaryTree<K,V,F>::Iterator,bool> BinaryTree<K,V,F>::insert ( K& key,  V& value)
 {
 	
 	if(root == nullptr)
@@ -575,15 +575,8 @@ template <class K, class V, class F>
         return node;
     }
     Node* y = first_node(node->_right);
-    if(node->_parent->_right == node){
-
-        node->_parent->_right=new Node(y->entry.first,
-        y->entry.second,node->_parent);
-    }
-    else{
-        node->_parent->_left = new Node(y->entry.first,
-        y->entry.second,node->_parent);
-    }
+    node->entry.first = y->entry.first;
+    node->entry.second = y->entry.second;
     return remove(y);  
 
 
@@ -591,7 +584,7 @@ template <class K, class V, class F>
 }
 
 template <class K, class V, class F>
-const V& BinaryTree<K,V,F>::remove(const K& key){
+ V& BinaryTree<K,V,F>::remove( K& key){
     Iterator s_res = find(key);
     Node* node = s_res.getNode();
     return remove(node)->entry.second;

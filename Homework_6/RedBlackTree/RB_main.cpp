@@ -11,12 +11,12 @@
 int main(int arcv, char *argv[])
 {
 	std::srand(LIM);
-    std::vector<double> random;
+    std::vector<int> random;
 	for(int i = 0; i<LIM; i++)
 		random.push_back(i);
 	//std::random_shuffle ( random.begin(), random.end() );
     int balanced = 1;
-    RedBlackTree<const int, double> rbt;
+    RedBlackTree<int, int> rbt;
     int i = 1;
     for(auto e : random)
 	{
@@ -33,7 +33,7 @@ int main(int arcv, char *argv[])
     for(auto e : random)
     {
         if(i == 5) break;
-        std::cout << i << std::endl;
+        std::cout <<"tolgo " << e << std::endl;
         rbt.remove(e);
         i++;
     }
