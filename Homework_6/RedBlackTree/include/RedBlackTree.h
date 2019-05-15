@@ -2,71 +2,68 @@
 #define __RB_TREE__
 #include "../../BinaryTree/include/BinaryTreeRec.h"
 
-template <class K, class V, class F = std::less<K>>
+// RB tree, the implementation is from the book, in fact the code on the slide seems to be
+// shorter, however I started this way and decided to go on because it is working
 
+template <class K, class V, class F = std::less<K>>
 
 class RedBlackTree: public BinaryTree<K,V,F>{
     
     public: 
 
-
-    Node* nil = {nullptr, nullptr, }
-
     class Iterator : public BinaryTree<K,V,F>::Iterator{};
-    
     void left_rotate(typename BinaryTree<K,V,F>::Node* x);
-     void right_rotate(typename BinaryTree<K,V,F>::Node* x);
+    void right_rotate(typename BinaryTree<K,V,F>::Node* x);
     void insert( K& key,  V& value);
-    void fix_insert_rbt(typename BinaryTree<K,V,F>::Node* z);
-    
-     V& remove( K& key);
-    void fix_remove_rbt(typename BinaryTree<K,V,F>::Node* x);
-
+    V& remove( K& key);
     bool isRBvalid(typename BinaryTree<K,V,F>::Node* node);
     int blackHeight(typename BinaryTree<K,V,F>::Node* node);
     
     private:
-    void fix_remove_rbt_case1(typename BinaryTree<K,V,F>::Node* x);
-    typename BinaryTree<K,V,F>::Node* fix_remove_rbt_case2(typename BinaryTree<K,V,F>::Node* x);
-    void fix_remove_rbt_case3(typename BinaryTree<K,V,F>::Node* x);
-    void fix_remove_rbt_case4(typename BinaryTree<K,V,F>::Node* x);
-    typename BinaryTree<K,V,F>::Node* fix_insert_rbt_case1(typename BinaryTree<K,V,F>::Node* z);
-    typename BinaryTree<K,V,F>::Node* fix_insert_rbt_case2(typename BinaryTree<K,V,F>::Node* z);
-    void fix_insert_rbt_case3(typename BinaryTree<K,V,F>::Node* z);
-
-
+    void remove( typename BinaryTree<K,V,F>::Node* node);
+    void fix_insert_rbt(typename BinaryTree<K,V,F>::Node* z);
+    void fix_remove_rbt(typename BinaryTree<K,V,F>::Node* x, typename BinaryTree<K,V,F>::Node* x_par);
 };
 
 template <class K, class V, class F>
 void RedBlackTree<K,V,F>::left_rotate(typename BinaryTree<K,V,F>::Node* x){
+    // get the node on my right
     typename BinaryTree<K,V,F>::Node* y = x->_right;
+    // attach the "beta" to x
     x->_right = y->_left;
-    if(y->_left != nil){
+    // se the "beta" parent
+    if(y->_left != nullptr){
         y->_left->_parent = x;
     }
+    // set the new y parent
     y->_parent = x->_parent;
-    if(x->_parent == nil){
+    // if x was the root, now I am the new root
+    if(x->_parent == nullptr){
          BinaryTree<K,V,F>::root = y;
     }
+    // if x right child add me on the right of is parent and vice-versa
     else if(x == x->_parent->_left){
         x->_parent->_left = y;
     }
     else{
         x->_parent->_right = y;
     }
+    // set x as a left child 
     y->_left = x;
+    // and obv update the parent
     x->_parent = y;
 }
 
 template <class K, class V, class F>
 void RedBlackTree<K,V,F>::right_rotate(typename BinaryTree<K,V,F>::Node* x){
+    // same as before but inverted
     typename BinaryTree<K,V,F>::Node* y = x->_left;
     x->_left = y->_right;
-    if(y->_right != nil){
+    if(y->_right != nullptr){
         y->_right->_parent = x;
     }
     y->_parent = x->_parent;
-    if(x->_parent == nil){
+    if(x->_parent == nullptr){
          BinaryTree<K,V,F>::root = y;
     }
     else if(x == x->_parent->_right){
@@ -83,151 +80,181 @@ template <class K, class V, class F>
 void RedBlackTree<K,V,F>::insert( K& key,  V& value){
 
         std::pair<typename BinaryTree<K,V,F>::Iterator,bool> ret = BinaryTree<K,V,F>::insert( key, value);
-        //this->printTree(this->root_get());
-
         typename BinaryTree<K,V,F>::Node* z = ret.first.getNode();
-        z->red = false;
-        //std::cout << this->root_get()->entry.first << std::endl;
-        //this->printTree(this->root_get());
-
+        z->red = true;
         fix_insert_rbt(z);
 }
 
-template <class K, class V, class F >
-typename BinaryTree<K,V,F>::Node* RedBlackTree<K,V,F>::fix_insert_rbt_case1(typename BinaryTree<K,V,F>::Node* z){
-    z->uncle()->red = false;
-    z->_parent->red = false;
-    z->grandparent()->red = true;
-    return z->grandparent();
-}
-
-template <class K, class V, class F >
-typename BinaryTree<K,V,F>::Node* RedBlackTree<K,V,F>::fix_insert_rbt_case2(typename BinaryTree<K,V,F>::Node* z){
-
-
-    typename BinaryTree<K,V,F>::Node* p = z->_parent;
-    bool z_side = !(z->is_right_child());
-    rotate(p,reverse_side(z_side));
-    return p;
-}
-
-template <class K, class V, class F>
-void RedBlackTree<K,V,F>::fix_insert_rbt_case3(typename BinaryTree<K,V,F>::Node* z){
-                    
-    typename BinaryTree<K,V,F>::Node* g = z->grandparent();
-    z->_parent->red = false;
-    g->red = true;
-    rotate(g,z->is_right_child());
-}
 
 template <class K, class V, class F >
 void RedBlackTree<K,V,F>::fix_insert_rbt(typename BinaryTree<K,V,F>::Node* z){
-    while(z->_parent != nullptr && 
-        (z->grandparent() != nullptr || z->_parent->red == true)){
-            if(z->uncle() != nullptr && z->uncle()->red == true){
-                z = fix_insert_rbt_case1(z);
+    while(z->_parent != nullptr && z->_parent->red){
+        if(z->_parent == z->grandparent()->_left)
+        {
+            typename BinaryTree<K,V,F>::Node* y = z->grandparent()->_right;
+            if(y != nullptr && y->red){
+                // case 1
+                z->_parent->red = false;
+                y->red = false;
+                z->grandparent()->red = true;
+                z = z->grandparent();
             }
             else{
-                if(z->is_right_child() != z->_parent->is_right_child()){
-
-                    z = fix_insert_rbt_case2(z);
-
+                if(z == z->_parent->_right){
+                    // case 2
+                    z = z->_parent;
+                    left_rotate(z);
                 }
-
-                fix_insert_rbt_case3(z);
-
+                // case 3
+                z->_parent->red = false;
+                z->grandparent()->red = true;
+                right_rotate(z->grandparent());
             }
         }
-    BinaryTree<K,V,F>::root->red = false; 
+        else{
+            typename BinaryTree<K,V,F>::Node* y = z->grandparent()->_left;
+            if(y != nullptr && y->red){
+                // case 1
+                z->_parent->red = false;
+                y->red = false;
+                z->grandparent()->red = true;
+                z = z->grandparent();
+                }
+            
+            else{
+                if(z == z->_parent->_left){
+                    // case 2
+                    z = z->_parent;
+                    right_rotate(z);
+                    }
+                // case 3
+                z->_parent->red = false;
+                z->grandparent()->red = true;
+                left_rotate(z->grandparent());
+            }
+        }
+    }
+    BinaryTree<K, V, F>::root->red = false;
 }
 
 template <class K, class V, class F>
- V& RedBlackTree<K,V,F>::remove( K& key){
-    typename BinaryTree<K,V,F>::Iterator s_res = BinaryTree<K, V, F>::find(key);
-    typename BinaryTree<K,V,F>::Node* y = s_res.getNode();
-     V& ret = BinaryTree<K,V,F>::remove(key);
-    if (y->red == false){
-        typename BinaryTree<K,V,F>::Node* x;
-        if(y->_left == nullptr)
-            x = y->_right;
-        else
-            x = y->_left;
-        fix_remove_rbt(x);
+
+V& RedBlackTree<K,V,F>::remove( K& key){
+    typename BinaryTree<K,V,F>::Iterator s_res = BinaryTree<K,V,F>::find(key);
+    typename BinaryTree<K,V,F>::Node* node = s_res.getNode();
+    remove(node);
+    return node->entry.second;
+ }
+
+template <class K, class V, class F>
+void  RedBlackTree<K,V,F>::remove( typename BinaryTree<K,V,F>::Node* node ){
+    typename BinaryTree<K,V,F>::Node* y = node;
+    bool red_orig = y->red;
+    typename BinaryTree<K,V,F>::Node* x;
+    typename BinaryTree<K,V,F>::Node* x_par;
+
+    if(node->_right == nullptr){
+        x = node->_left;
+        BinaryTree<K,V,F>::transplant(node, node->_left);
     }
-    return(ret);  
+    else if(node->_left == nullptr){
+        x = node->_right;
+        BinaryTree<K,V,F>::transplant(node, node->_right);
+
+    }
+    else{
+        y = BinaryTree<K,V,F>::first_node(node->_right);
+        red_orig = y!=nullptr ? y->red : false;
+        x = y->_right;
+        if(y->_parent == node){
+            x = y;
+        }
+        if(y->_parent != node){
+            BinaryTree<K,V,F>::transplant(y, y->_right);
+            y->_right = node->_right;
+            y->_right->_parent = y;
+        }
+        BinaryTree<K,V,F>::transplant(node,y);
+        y->_left = node->_left;
+        y->_left->_parent = y;
+        y->red = node->red;
+
+        std::cout << x <<std::endl;
+
+       
+    }
+    x_par = node->_parent;
+
+    if(!red_orig) fix_remove_rbt(x, x_par);
 }
 
 template <class K, class V, class F >
-void RedBlackTree<K,V,F>::fix_remove_rbt(typename BinaryTree<K,V,F>::Node* x){
+void RedBlackTree<K,V,F>::fix_remove_rbt(typename BinaryTree<K,V,F>::Node* x,
+typename BinaryTree<K,V,F>::Node* x_par){
 
-    while(x != BinaryTree<K,V,F>::root && !x->red){
-        typename BinaryTree<K,V,F>::Node* w = x->sibling();
-
-        if(w != nullptr && w->red){
-            std::cout << "caso1" << std::endl;
-            x = fix_remove_rbt_case2(x);
+    while(x != BinaryTree<K,V,F>::root && (x == nullptr ||!x->red)){
+        if(x == x_par->_left){
+           typename BinaryTree<K,V,F>::Node* w = x_par->_right;
+           if(w != nullptr && w->red){
+               // case 1
+               w->red = false;
+               x_par->red = true;
+               left_rotate(x_par);
+               w = x_par->_right;
+           }
+           // case 2
+           if((w->_left == nullptr || !w->_left->red) && (w->_right == nullptr|| !w->_right->red)){
+               w->red = true;
+               x = x_par;
+           } 
+           else{
+               // case 3
+               if(w->_right == nullptr || !w->_right->red){
+                   if(w->_left != nullptr) w->_left->red = false;
+                   w->red = true;
+                   right_rotate(w); 
+                    w = x_par->_right;
+               }
+               // case 4
+               w->red = x_par->red;
+               x_par->red=false;
+               w->_right->red = false;
+               left_rotate(x_par);
+               x = BinaryTree<K, V, F>::root;
+           } 
         }
         else{
-            int x_side = !(x->is_right_child());
-
-            int r_side = !(x_side);
-
-        // if(w == nullptr) break;
-            if( w->get_child(r_side) != nullptr && w->get_child(r_side)->red ){
-                
-                std::cout << "caso4" << std::endl;
-
-                fix_remove_rbt_case4(x);
-                return;
+            typename BinaryTree<K,V,F>::Node* w = x_par->_left;
+            if(w != nullptr && w->red){
+               // case 1
+               w->red = false;
+               x_par->red = true;
+               right_rotate(x_par);
+                w = x_par->_left;
             }
+                // case 2
+            if((w->_right == nullptr|| !w->_right->red) && (w->_left == nullptr|| !w->_left->red)){
+               w->red = true;
+                x = x_par;
+           } 
             else{
-                if( w->get_child(x_side) != nullptr && w->get_child(x_side)->red){
-                    
-                    std::cout << "caso3" << std::endl;
-                    fix_remove_rbt_case3(x);
-                }
-                else{
-
-                    std::cout << "caso2" << std::endl;
-                    fix_remove_rbt_case1(x);
-                }
+                // case 3
+               if(w->_left == nullptr || !w->_left->red){
+                   if(w->_right != nullptr) w->_right->red = false;
+                   w->red = true;
+                   left_rotate(w); 
+                    w = x_par->_left;
+               }
+               // case 4
+               w->red = x_par->red;
+               x_par->red=false;
+               w->_left->red = false;
+               right_rotate(x_par);
+               x = BinaryTree<K, V, F>::root;
             }
+        x->red = false;
         }
     }
-}
-
-template <class K, class V, class F>
-void RedBlackTree<K,V,F>::fix_remove_rbt_case1(typename BinaryTree<K,V,F>::Node* x){
-    x->sibling()->red = false;
-    x->_parent->red = true;
-    rotate(x,!(x->is_right_child()));
-}
-
-template <class K, class V, class F>
-typename BinaryTree<K,V,F>::Node* RedBlackTree<K,V,F>::fix_remove_rbt_case2(typename BinaryTree<K,V,F>::Node* x){
-    x->sibling()->red = true;
-    return x->_parent;
-}
-
-template <class K, class V, class F>
-void RedBlackTree<K,V,F>::fix_remove_rbt_case3(typename BinaryTree<K,V,F>::Node* x){
-    int x_side = !(x->is_right_child());
-    int r_side = !(x_side);
-    x = x->get_child(r_side);
-    x->get_child(x_side)->red = false;
-    x->red = true;
-    rotate(x,r_side);
-}
-
-template <class K, class V, class F>
-void RedBlackTree<K,V,F>::fix_remove_rbt_case4(typename BinaryTree<K,V,F>::Node* x){
-    int x_side = !(x->is_right_child());
-    int r_side = !(x_side);
-    x = x->get_child(r_side);
-    x->get_child(r_side)->red = false;
-    x->red = x->_parent->red;
-    x->_parent->red = false;
-    rotate(x,x_side);
 }
 
 
