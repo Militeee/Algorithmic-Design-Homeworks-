@@ -56,35 +56,21 @@ class BinaryTree
         /** parent node */
         Node* _parent;
         /** color for RBtree*/
-        bool red = true;
+        bool red;
         /** pair with key and value */
         std::pair< K, V> entry; 
         /** construct a new Node object */
-        Node( K& key,  V& value, Node* parent,Node* left = nullptr, Node* right = nullptr): 
-        _left{left}, _right{right}, _parent{parent},entry{std::pair<K,V>(key,value)} {}
+        Node( K& key,  V& value, Node* parent,Node* left = nullptr, Node* right = nullptr, bool _red = true): 
+        _left{left}, _right{right}, _parent{parent},entry{std::pair<K,V>{key,value}}, red{_red} {}
         /** default destructor */
         ~Node() noexcept = default;
+        Node() = default;
+        Node(bool _red): Node() {red = _red;}
 
 
-        bool is_right_child(){
-            return (_parent != nullptr && (_parent->_right == this));
-        }
+    
 
-        Node* sibling(){
-            if(this->is_right_child()) return _parent->_left;
-            return _parent->_right;
-        }
-
-        Node* uncle(){
-            return _parent->sibling();
-        }
-
-
-
-        Node* get_child(bool left){
-            if(left) return _left;
-            return _right;
-        }
+      
 
 
         void destroy(){
@@ -94,17 +80,10 @@ class BinaryTree
 
         }
 
-        void set_child(bool left, Node* y){
-            if(left){ 
-                _left=y;
-                //std::cout << "Cane"<< std::endl;
-            }
-            else {
-                _right = y;
-            }
-            if(y != nullptr)
-                y->_parent = this;
-        }
+
+        
+
+     
 
         Node* grandparent(){ return _parent->_parent;}
     };
@@ -336,7 +315,6 @@ class BinaryTree
     
      V& remove( K& key);
 
-    void printTree(Node* root);
 
 
     template <class k,class v, class f> 
@@ -603,36 +581,6 @@ bool BinaryTree<K,V,F>::isBalanced(Node* node) {
                 std::abs(height(node->_left) - height(node->_right)) <=1);
 }
 
-template<class K, class V, class F>
-void BinaryTree<K,V,F>::printTree(Node* root)  
-{  
-    if (root == NULL) return;  
-  
-    std::queue<Node *> q;  
-  
-    q.push(root);  
-  
-    while (q.empty() == false)  
-    {  
-        
-        int nodeCount = q.size();  
-  
-    
-        while (nodeCount > 0) 
-        {  
-            Node* node = q.front();  
-            std::cout << node->entry.first << " ";  
-            q.pop();  
-            if (node->_left != nullptr)  
-                q.push(node->_left);  
-            if (node->_right != nullptr)  
-                q.push(node->_right);  
-            nodeCount--;  
-        }  
-         std::cout << std::endl;  
-    }  
-}  
-  
 
 
 
