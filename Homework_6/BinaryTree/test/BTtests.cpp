@@ -10,7 +10,7 @@
 typedef std::pair<const int, std::string> pair_is;
 typedef std::pair<const std::string, double> pair_sd;
 
-TEST_CASE("Testing methos of class BT", "[BinaryTree]")
+TEST_CASE("Testing methods of class BT", "[BinaryTree]")
 {
 	// initialize the trees which is also a test of the custom constructor and insert method
 	BinaryTree<int,std::string> bt{};
@@ -56,49 +56,14 @@ TEST_CASE("Testing methos of class BT", "[BinaryTree]")
 		REQUIRE(*bt3.find(0) == p1 );
 		REQUIRE(*bt4.find("a") == p2);
 	}
-	SECTION("Test move constructor and copy assignment")
-	{
-		pair_is p1(1,"b");
-		pair_sd p2("b",1.1);
-		BinaryTree<int,std::string> bt_copy;
-		BinaryTree<std::string,double> bt2_copy;
-		// copy assignement
-		bt_copy = bt;
-		bt2_copy = bt2;
-		// testing that the copy are identical
-		REQUIRE(*bt_copy.find(1) == p1);
-		REQUIRE(*bt2_copy.find("b") == p2);
-		// testing that the objects are not reference to each other
-		CHECK(&(*bt.find(1)) != &(*bt_copy.find(1)));
-		CHECK(&(*bt2.find("b")) != &(*bt2_copy.find("b")));
-		// move constructor
-		BinaryTree<int,std::string> bt3 = std::move(bt);
-		BinaryTree<std::string,double> bt4 = std::move(bt2);
-		// testing the moved structures
-		REQUIRE(*bt3.find(2) == *bt_copy.find(2));
-		REQUIRE(*bt4.find("b") == *bt2_copy.find("b"));
 
-	}
-	SECTION("Test move assignement")
-	{
-		pair_is p1(1,"b");
-		pair_sd p2("b",1.1);
-		// move assignement
-		BinaryTree<int,std::string> bt_move;
-		BinaryTree<std::string,double> bt2_move;
-		bt_move = std::move(bt);
-		bt2_move = std::move(bt2);
-		//Testing the moved structures
-		REQUIRE(*bt_move.find(1) == p1);
-		REQUIRE(*bt2_move.find("b") == p2);
-	}
 	SECTION("Test [] operators (const and not)")
 	{
 		//test the returned vale when the key is in the BT
 		REQUIRE(bt[2] == "c");
 		REQUIRE(bt2["c"] == 2.1);
 		// test the returned value when the key is not in the BT
-		REQUIRE(bt[12] == std::string{});
+		REQUIRE(bt[12] == "l");
 		REQUIRE(bt2["baobab"] == 0.0);
 		REQUIRE(*bt.find(12) == (std::pair<const int, std::string>{12,std::string{}}));
 		REQUIRE(*bt2.find("baobab") == (std::pair<const std::string, double>{"baobab",0.0}));
@@ -180,12 +145,5 @@ TEST_CASE("Testing methos of class BT", "[BinaryTree]")
 		//find if the tree is correctly reversed
 		REQUIRE(*bt_fun.begin() == pFirst);
 		REQUIRE(*(++bt_fun.begin()) == pSecond);
-	}
-	SECTION("Test the remove function")
-	{
-		bt.remove(0);
-		bt2.remove("a");
-		REQUIRE(bt.find(0) == bt.end());
-		REQUIRE(bt2.find("a") == bt2.end());
 	}
 }

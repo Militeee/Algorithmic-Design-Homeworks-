@@ -2,8 +2,6 @@
 #include <vector>
 #include <string>
 #include "BinaryTreeRec.h"
-#include "TestFunction.h"
-
 
 
 
@@ -18,7 +16,7 @@ int main(){
 		bt.insert(keys[i], values[keys[i]]);
     }
     std::cout << bt << std::endl;
-    bt.remove(0);
+    bt.remove(5);
     std::cout << bt << std::endl;
 
     return 0;
