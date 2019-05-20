@@ -16,7 +16,7 @@ int main(){
 		bt.insert(keys[i], values[keys[i]]);
     }
     std::cout << bt << std::endl;
-    bt.remove(5);
+    bt.remove(std::rand()%10);
     std::cout << bt << std::endl;
 
     return 0;

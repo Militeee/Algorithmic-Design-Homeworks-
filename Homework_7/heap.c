@@ -116,4 +116,8 @@ min_heap min_heap_build(pair* array, size_t n){
     
 }
 
+void free_heap(min_heap* hp){
+    free(hp->array);
+}
+
 

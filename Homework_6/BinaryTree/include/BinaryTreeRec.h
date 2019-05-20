@@ -31,7 +31,7 @@ bool reverse_side(bool left){
  * 
  * The implementation is a simple not autobalancing Binary tree, it is constructed with
  * a constant templated key, a templated value and a templated comparing function (the default
- *  is the < operator of the key type). It has a unique pointer to the root node.
+ *  is the < operator of the key type). It has a pointer to the root node.
  * 
  * @tparam K the key type
  * @tparam V the value stored in the node
@@ -42,9 +42,9 @@ class BinaryTree
 {
     protected:
     /**
-     * @brief A structure that represent the node of the tree
-     * A private container that takes the unique pointers to the left and right child, a pointer
-     * to the parent and the entry, a pair with key and value.
+     * A structure that represent the node of the tree
+     * A private container that takes the  pointers to the left and right child, a pointer
+     * to the parent and the entry, a pair with key and value, also hold the color for the RBtree implementation.
      */
     struct Node
 
@@ -56,12 +56,13 @@ class BinaryTree
         /** parent node */
         Node* _parent;
         /** color for RBtree*/
-        bool red;
         /** pair with key and value */
-        std::pair< K, V> entry; 
+        std::pair<const K, V> entry; 
         /** construct a new Node object */
-        Node( K& key,  V& value, Node* parent,Node* left = nullptr, Node* right = nullptr, bool _red = true): 
-        _left{left}, _right{right}, _parent{parent},entry{std::pair<K,V>{key,value}}, red{_red} {}
+        bool red;
+
+        Node( const K& key,  const V& value, Node* parent,Node* left = nullptr, Node* right = nullptr, bool _red = true): 
+        _left{left}, _right{right}, _parent{parent},entry{std::pair<const K,  V>{key,value}}, red{_red} {}
         /** default destructor */
         ~Node() noexcept = default;
         Node() = default;
@@ -73,45 +74,29 @@ class BinaryTree
       
 
 
-        void destroy(){
-            if(this->_right != nullptr) this->_right->destroy();
-            if(this->_left != nullptr) this->_left->destroy();
-            delete this;
-
-        }
-
-
         
 
      
 
         Node* grandparent(){ return _parent->_parent;}
     };
-    /** Unique pointer to the root */
+    /** Pointer to the root */
     Node* root = nullptr;
-    /**
+ 
+    /** The comparison operator, a functional object that returns a boolean */
+    F cmp = F{};
+
+
+       /**
      * @brief A function to calculate the first node (following the key order)
      * @return Node* a pointer to the first node
      */
     Node* first_node(Node* node = nullptr) const;
-    /** The comparison operator, a functional object that returns a boolean */
-    F cmp = F{};
 
     /**
-    * @brief auxiliary recursive function that implements the search algorithm used in insert and find functions
-    * 
-    * 
-    * Given a pointer to a node (branch), a key, and a pointer to a parent, this function look for the 
-    * correct place where to find (or to put) an element with this key in the subtree determined by the given node (branch).
-    * This function will return also the correct parent to assign to the node in the case of insertion.
-    * The correct parent is the first ancestor which key is greater than the actual node's key.
-    *
-    * @tparam Node*& reference to a unique pointer to a node
-    * @tparam const K& reference to the key
-    * @tparam Node* pointer to the right parent for the insertion
-    * @return std::pair< Node*&, Node* > pair with the reference to the target branch and the pointer to the correct parent
+        auxiliary recursive function that implements the search algorithm used in insert and find functions
     */
-    Node*  search (const K& key);
+    Node*  search ( const K& key);
 
     /**
     * @brief auxiliary recursive function that implements the balancing algorithm used in the balance() function
@@ -125,7 +110,7 @@ class BinaryTree
     * @tparam int end index
     * 
     */
-    void balance(std::vector<std::pair<const K, V>>& list, int begin, int end);
+    void balance(std::vector<std::pair< const K, V>>& list, int begin, int end);
     /**
      * @brief An utility for the copy constructor
      * It starts a recursive copy of a BT starting from a given node(ideally the root). It simply insert the nodes in the caller object in the same
@@ -134,7 +119,17 @@ class BinaryTree
      */
     void copy_util(const BinaryTree::Node& old, Node*& copied);
     void transplant(BinaryTree::Node* x, BinaryTree::Node* y);
-    Node* remove(Node* node);
+    void remove(Node* node);
+
+    // function used for the destructor, destroy iteratively the nodes
+    void destroy(Node* node){
+        if(node == nullptr) return;
+        if(node->_right != nullptr) destroy(node->_right);
+        if(node->_left != nullptr) destroy(node->_left);
+        delete node;
+
+    }
+
 
 
 
@@ -150,8 +145,7 @@ class BinaryTree
      * 
      */
     ~BinaryTree() {
-        if(root != nullptr)
-            root->destroy();
+        destroy(root);
     }
     /**
      * @brief Creates a deep copy of a binary tree
@@ -160,7 +154,7 @@ class BinaryTree
      */
 
 
-    BinaryTree (const BinaryTree& bt){this->copy_util(*bt.root, this->root);}
+    BinaryTree (const BinaryTree& bt){if(bt.root != nullptr) this->copy_util(*bt.root, this->root);}
     /**
      * @brief Copy assignement
      * 
@@ -168,8 +162,15 @@ class BinaryTree
      * @return BinaryTree& 
      */
     BinaryTree& operator=(const BinaryTree& bt);
-    BinaryTree(BinaryTree&& bt) noexcept = default;
-    BinaryTree& operator=(BinaryTree&& bt) noexcept = default;
+    BinaryTree(BinaryTree&& bt) noexcept : root{nullptr}{
+        std::swap(root, bt.root);
+
+    }
+    // move assignement, a simpe root swap
+    BinaryTree& operator=(BinaryTree&& bt) noexcept {
+        std::swap(root, bt.root);
+        return *this;
+    }
 
     /**
      * @brief Finds out if the tree is balanced
@@ -196,7 +197,7 @@ class BinaryTree
 
     
     //clear the content of the tree
-    void clear() {root->destroy();}
+    void clear() {destroy(root); root = nullptr;}
 
     /**
     * @brief function that balance the tree
@@ -217,10 +218,10 @@ class BinaryTree
     * that element. If not present, a new pair with the given key and a default value will be inserted in the tree, 
     * and the a reference to this new value will be returned.
     *
-    * @tparam const K& the key of the searched value 
-    * @return V& reference to the value
+    * @tparam const const K& the key of the searched value 
+    * @return const V& reference to the value
     */
-    V& operator[](const K& key);
+    const V& operator[]( const K& key);
 
      /**
     * @brief operator that return the value corresponding to a given key
@@ -229,10 +230,10 @@ class BinaryTree
     * The functioning of this operator is analogous to the non const one, but this time if an element corresponding 
     * to the given key is not found, then an exception will be thrown. In this way the tree will be surely unmodified. 
     * @throws runtime_errors
-    * @tparam const K& the key of the searched value 
-    * @return const V& reference to the value
+    * @tparam const const K& the key of the searched value 
+    * @return const const V& reference to the value
     */
-    const V& operator[](const K& key) const;
+     const V& operator[]( const K& key) const;
 
     class Iterator;
     class ConstIterator;
@@ -291,9 +292,11 @@ class BinaryTree
      * @param key the key of the node to be searched
      * @return Iterator an Iterator to the node with the key or to end() if its not present  
      */
-    Iterator find(const K& key)
+    Iterator find( const K& key)
     {
         Iterator it = Iterator(search(key));
+        if(it != end() && it.getNode()->entry.first != key)
+            it = end();
         return it;
     }
     /**
@@ -304,16 +307,17 @@ class BinaryTree
      * @param value the value of the new node
      * @return std::pair<Iterator,bool> a pair with an iterator to the inserted (or where the key is already present) node and a bool that indicates if the new has been added
      */
-    std::pair<Iterator,bool> insert ( K& key,  V& value);
+    std::pair<Iterator,bool> insert (  const K& key,   const V& value);
     /**
      * @brief An insert which takes directly an std::pair with the right types
      * 
      * @param p the std::pair to be added in the new node 
      * @return std::pair<Iterator,bool> saame as the other insert()
      */
-    std::pair<Iterator,bool> insert (std::pair< K&,  V&> p) {return insert(p.first,p.second);}
+    std::pair<Iterator,bool> insert (std::pair< const K&,   const V&> p) {return insert(p.first,p.second);}
     
-     V& remove( K& key);
+    // remove an element, conserving the BTree properties
+    const V& remove( const K& key);
 
 
 
@@ -386,12 +390,13 @@ class BinaryTree<K,V,F>::ConstIterator : public BinaryTree<K,V,F>::Iterator
     public:
         using non_const_it = BinaryTree<K,V,F>::Iterator;
         using non_const_it::Iterator;
-        const std::pair<const K, V>& operator*() const {return non_const_it::operator*(); }
+        const std::pair< const K, V>& operator*() const {return non_const_it::operator*(); }
 };
 
 template <class K, class V, class F>
 void BinaryTree<K,V,F>::copy_util(const BinaryTree::Node& old, Node*& copied )
 {
+    // copy recursively from a node
     copied = new Node(old.entry.first, old.entry.second, old._parent);
     if(old._left != nullptr)
         copy_util(*old._left, copied->_left);
@@ -402,33 +407,35 @@ void BinaryTree<K,V,F>::copy_util(const BinaryTree::Node& old, Node*& copied )
 template <class K, class V, class F>
 BinaryTree<K,V,F>& BinaryTree<K,V,F>::operator=(const BinaryTree& bt)
 {
-    root = nullptr;
+   root = nullptr;
     auto tmp = bt;
     (*this) = std::move(tmp);
     return *this;
 }
 
 template <class K, class V,class F>
-std::pair<typename BinaryTree<K,V,F>::Iterator,bool> BinaryTree<K,V,F>::insert ( K& key,  V& value)
+std::pair<typename BinaryTree<K,V,F>::Iterator,bool> BinaryTree<K,V,F>::insert ( const K& key,  const V& value)
 {
-	
+	// if I'm the first node to be inserted
 	if(root == nullptr)
 	{
 		root = new Node(key,value,nullptr);
 		return std::pair<Iterator,bool>{Iterator{root},true};
 	}
 	Node* node = search(key);
-    
+
+    // If I'm a new node with the same key of an existing one
 	if(!cmp(node->entry.first, key) && !cmp(key, node->entry.first))
 		return std::pair<Iterator,bool>{Iterator{node},false};
 		
-
+    // if I'm bigger than my parent
 	if(cmp(node->entry.first, key))
 	{
 
 		node->_right= new Node(key,value,node);
 		return std::pair<Iterator,bool>{Iterator{node->_right},true};
 	}
+    // If I'm smaller
 	else 
 	{
 		node->_left=new Node(key,value,node);
@@ -440,10 +447,13 @@ std::pair<typename BinaryTree<K,V,F>::Iterator,bool> BinaryTree<K,V,F>::insert (
 }
 
 template <class K, class V, class F>
-typename BinaryTree<K,V,F>::Node* BinaryTree<K,V,F>::search (const K& key)
+typename BinaryTree<K,V,F>::Node* BinaryTree<K,V,F>::search ( const K& key)
 {
 	Node* node = root;
+    if(node == nullptr) return nullptr;
 	auto k = node->entry.first;
+    // search iteratively till I find the right node or the node where to
+    // insert it
 	while(node->_left != nullptr || node->_right != nullptr)
 	{
 		if(!cmp(k,key) && !cmp(key,k))
@@ -469,7 +479,7 @@ typename BinaryTree<K,V,F>::Node* BinaryTree<K,V,F>::search (const K& key)
 }
 
 template <class K, class V, class F>
-V& BinaryTree<K,V,F>::operator[](const K& key)  
+const V& BinaryTree<K,V,F>::operator[]( const K& key)  
 {
     Iterator s_res = find(key);
     if(s_res != end()) return (*s_res).second;
@@ -477,7 +487,7 @@ V& BinaryTree<K,V,F>::operator[](const K& key)
 }
 
 template <class K, class V, class F>
-const V& BinaryTree<K,V,F>::operator[](const K& key)  const
+const V& BinaryTree<K,V,F>::operator[]( const K& key)  const
 {
     Iterator s_res = find(key);
     if(s_res != end()) return (*s_res).second;
@@ -505,7 +515,7 @@ void BinaryTree<K,V,F>::balance()
 }
 
 template <class K, class V, class F>
-void BinaryTree<K,V,F>::balance(std::vector<std::pair<const K, V>>& list, int begin,int end)
+void BinaryTree<K,V,F>::balance(std::vector<std::pair< const K, V>>& list, int begin,int end)
 {
     if(begin > end) return;
     int middle = begin + (end - begin)/2;
@@ -519,62 +529,72 @@ void BinaryTree<K,V,F>::balance(std::vector<std::pair<const K, V>>& list, int be
 template <class K, class V, class F>
 void BinaryTree<K,V,F>::transplant(BinaryTree::Node* x, BinaryTree::Node* y){
   
+    // if x is root, swap y with it
     if (x->_parent == nullptr){
         this->root = y;
-
     }
+
     else{
-      
+        // if x is right child change his parent right pointer and vice-versa
         if(x->_parent->_right == x){
             x->_parent->_right = y;
         }
         else{
-
             x->_parent->_left = y ;
         }
     }
-
-
+    // if I'm not transplanting a nullpointer update the parents
     if(y != nullptr)
         y->_parent = x->_parent;  
-
-
 }
 
 
 template <class K, class V, class F>
- typename BinaryTree<K,V,F>::Node* BinaryTree<K,V,F>::remove(BinaryTree::Node* node){
+void BinaryTree<K,V,F>::remove(BinaryTree::Node* node){
+    // if no right child, transplant me with my left child and vice-versa
     if(node->_right == nullptr){
         transplant(node, node->_left);
-        return node;
     }
-    if(node->_left == nullptr){
+    else if(node->_left == nullptr){
         transplant(node, node->_right);
-        return node;
     }
-    Node* y = first_node(node->_right);
-    node->entry.first = y->entry.first;
-    node->entry.second = y->entry.second;
-    return remove(y);  
-
-
-
+    else{    // if I have both children, find my successor
+        Node* y = first_node(node->_right);
+        // if my successor is not my child
+        if(y->_parent != node){
+            //substitute y with is right child
+            transplant(y, y->_right);
+            // set right parency  for the insertion of y in place of node
+            y->_right = node->_right;
+            y->_right->_parent = y;
+        }
+        // insert the successor in place of node
+        transplant(node,y);
+        // set also the parency of  left part 
+        y->_left = node->_left;
+        y->_left->_parent = y;
+    }
+    delete node;
 }
 
 template <class K, class V, class F>
- V& BinaryTree<K,V,F>::remove( K& key){
+ const V& BinaryTree<K,V,F>::remove( const K& key){
     Iterator s_res = find(key);
     Node* node = s_res.getNode();
-    return remove(node)->entry.second;
+    V& res = node->entry.second;
+    remove(node);
+    return res;
 }
 
 template<class K, class V, class F>
 int BinaryTree<K,V,F>::height(Node* node) {
+        // if I am a leaf returrn zero, or 1+the branch height
         return (node == nullptr) ? 0: 1 + std::max(height(node->_left),height(node->_right));
 }
 
 template<class K, class V, class F>
 bool BinaryTree<K,V,F>::isBalanced(Node* node) {
+    // the tree is balanced if 
     return (node == NULL) ||
                 (isBalanced(node->_left) &&
                 isBalanced(node->_right) &&

@@ -15,6 +15,8 @@ extern "C"
 }
 #endif
 
+// the comments are in the .cpp file
+
 
 void init_sssp(Graph& gr);
 void relax(Graph& gr, int src, int dest, int weight);

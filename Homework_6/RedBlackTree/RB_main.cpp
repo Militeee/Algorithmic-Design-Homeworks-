@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 #include <chrono>
-#define LIM 20
+#define LIM 30
 
 int main(int arcv, char *argv[])
 {
@@ -14,22 +14,20 @@ int main(int arcv, char *argv[])
     std::vector<int> random;
 	for(int i = 0; i<LIM; i++)
 		random.push_back(i);
-	//std::random_shuffle ( random.begin(), random.end() );
+	std::random_shuffle ( random.begin(), random.end() );
     int balanced = 1;
     RedBlackTree<int, int> rbt;
     int i = 1;
     for(auto e : random)
 	{
-        //if(i == 4) break;
-        //std::cout << i << std::endl;
         rbt.insert(e,e);
        
 	}
     rbt.printTree(rbt.root_get());
 
-     //if(rbt.isRBvalid(rbt.root_get()) != true){
-     //       balanced = 0;
-   // }
+    if(rbt.isRBvalid(rbt.root_get()) != true){
+            balanced = 0;
+   }
 
 
     if(balanced)
@@ -39,19 +37,19 @@ int main(int arcv, char *argv[])
 
     balanced = 1;
     std::random_shuffle ( random.begin(), random.end() );
+    
     for(auto e : random)
     {
-        if(i == 10) break;
-        std::cout <<"tolgo " << e << std::endl;
+        if(i == 15) break;
         rbt.remove(e);
         i++;
     }
 
     rbt.printTree(rbt.root_get());
 
-    // if(rbt.isRBvalid(rbt.root_get()) != true){
-     //       balanced = 0;
-    //}
+     if(rbt.isRBvalid(rbt.root_get()) != true){
+           balanced = 0;
+    }
 
 
     if(balanced)
@@ -59,5 +57,5 @@ int main(int arcv, char *argv[])
     else
         std::cout<< "Remove non corretto!\n" << std::endl;
 
-
+    
 }

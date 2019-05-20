@@ -5,3 +5,5 @@ main.x: main.cpp dijkstra.cpp graph.cpp heap.o utils.o
 
 heap.o utils.o : heap.c utils.c 
 	gcc -c $^ 
+clean:
+	rm *.o *.x

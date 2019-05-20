@@ -17,12 +17,17 @@ int main(){
 
 
         for(int j = 0 ; j<i; j++){
-            array3[j] = j+1;
+            // insertion sort worst case, all the value in reverse order
             array1[j] = i-j;
+            // insertion sort best case, all the value already ordered
+            array3[j] = j+1;
+            // for quick sort we have all the value ordered 
+            // we are just gonna change the pivot choice
             array2[j] = j+1;
             array4[j] = j+1;
 
         }
+        // it becomes too slow
         if(i < 131073){
             clock_gettime(CLOCK_REALTIME, &b_time);
             insertionSort(array1,i);
@@ -31,6 +36,7 @@ int main(){
             //print_array(array1,i);
         }
 
+        // choose the first element as a pivot
         clock_gettime(CLOCK_REALTIME, &b_time);
         quickSort(array2, 0, i-1);
         clock_gettime(CLOCK_REALTIME, &e_time);
@@ -43,6 +49,7 @@ int main(){
         printf("Insertion sort best \t%lf\n", get_execution_time(b_time, e_time) );
         //print_array(array3,i);
 
+        // choose the element in the middle
         clock_gettime(CLOCK_REALTIME, &b_time);
         quickSort_half(array4,0, i-1);
         clock_gettime(CLOCK_REALTIME, &e_time);

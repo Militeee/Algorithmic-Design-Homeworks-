@@ -2,11 +2,12 @@
 #include <ctime>
 #include <cstdlib>
 #include "dijkstra.h"
-#define LIM 10000
+#define LIM 1000
 
 int main(){
     struct timespec b_time, e_time;
 
+    // example of the slides
 
     Graph gp{};
     gp.addEdge(0,1,1);
@@ -41,6 +42,8 @@ int main(){
     
     for(int i = 1; i < gp2.size(); i++)
         printPath(gp2, i,0);
+
+    // example of the book
 
     Graph gp3{};
 
@@ -89,6 +92,9 @@ int main(){
     for(int i = 1; i < gp4.size(); i++)
         printPath(gp4, i,0);
 
+
+    // the graph is not random at all, and in fact favours a lot the heap implementation
+    // cause the Edge number is << than V^2
     std::cout << "For a (not so) randomly generated graph" << std::endl;
     // test the time on a quite sparse graph
     for(int j = 10; j < LIM; j = j * 10){

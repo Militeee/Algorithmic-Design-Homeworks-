@@ -3,6 +3,8 @@
 #include "../../BinaryTree/include/BinaryTreeRec.h"
 // RB tree, the implementation is from the book, in fact the code on the slide seems to be
 // shorter, however I started this way and decided to go on because it is working
+// Actually it uses an empty black node NIL instead of a null pointer to simplify the algorithm , so it does not really use the
+// old functions and much of the methods have been written again folowing the Comen Book
 
 template <class K, class V, class F = std::less<K>>
 
@@ -11,22 +13,46 @@ class RedBlackTree: public BinaryTree<K,V,F>{
     public: 
 
     class Iterator : public BinaryTree<K,V,F>::Iterator{};
+    // function to perform the left rotation as in the slides
     void left_rotate(typename BinaryTree<K,V,F>::Node* x);
+    // same but right
     void right_rotate(typename BinaryTree<K,V,F>::Node* x);
-    void insert( K& key,  V& value);
-    V& remove( K& key);
+    // insert a new value recovering the RB property
+    void insert( const K& key,  const V& value);
+    // remove a node keeping the RB property
+    const V& remove( const K& key);
+    // find out if a tree can be a RB tree
     bool isRBvalid(typename BinaryTree<K,V,F>::Node* node);
-    int blackHeight(typename BinaryTree<K,V,F>::Node* node);
+    // pretty printing of a tree with levels
     void printTree(typename BinaryTree<K,V,F>::Node* root);  
 
+    //custom destructor
+    ~RedBlackTree() {
+            destroy(BinaryTree<K,V,F>::root);
+            delete NIL;
+            BinaryTree<K, V, F>::root = nullptr;
+    }
     
     private:
-    void remove( typename BinaryTree<K,V,F>::Node* node);
-    void fix_insert_rbt(typename BinaryTree<K,V,F>::Node* z);
-    void fix_remove_rbt(typename BinaryTree<K,V,F>::Node* x);
+
+    // empty black node to be used instead of a nullptr
     typename BinaryTree<K,V,F>::Node* NIL = new typename BinaryTree<K,V,F>::Node(false);
-    typename BinaryTree<K,V,F>::Node* find_node(K& key);
+
+
+    // aux function for the remove
+    void remove( typename BinaryTree<K,V,F>::Node* node);
+    // recover the RB property after an insertion
+    void fix_insert_rbt(typename BinaryTree<K,V,F>::Node* z);
+    // recover the RB property after a remove
+    void fix_remove_rbt(typename BinaryTree<K,V,F>::Node* x);
+    // find a node with a specific key
+    typename BinaryTree<K,V,F>::Node* find_node(const K& key);
+    // compute the smallest value of a tree or subtree
     typename BinaryTree<K,V,F>::Node* first_node(typename BinaryTree<K,V,F>::Node* node);
+     // calculate recursively the black height starting from a node 
+    int blackHeight(typename BinaryTree<K,V,F>::Node* node);
+    // aux function fo the destructor
+    void destroy(typename BinaryTree<K,V,F>::Node*);
 };
 
 template <class K, class V, class F>
@@ -46,11 +72,13 @@ void RedBlackTree<K,V,F>::left_rotate(typename BinaryTree<K,V,F>::Node* x){
          BinaryTree<K,V,F>::root = y;
     }
     // if x right child add me on the right of is parent and vice-versa
-    else if(x == x->_parent->_left){
+    else{ 
+    if(x == x->_parent->_left){
         x->_parent->_left = y;
     }
     else{
         x->_parent->_right = y;
+    }
     }
     // set x as a left child 
     y->_left = x;
@@ -81,7 +109,10 @@ void RedBlackTree<K,V,F>::right_rotate(typename BinaryTree<K,V,F>::Node* x){
 }
 
 template <class K, class V, class F>
-void RedBlackTree<K,V,F>::insert( K& key,  V& value){
+void RedBlackTree<K,V,F>::insert( const K& key,  const V& value){
+
+        // It is similar to the BT insert
+        // but this one does not use the search function
         if(BinaryTree<K,V,F>::root == nullptr) 
             BinaryTree<K,V,F>::root = NIL;
         typename BinaryTree<K,V,F>::Node* z = new typename BinaryTree<K,V,F>::Node(key,value,nullptr);
@@ -89,19 +120,18 @@ void RedBlackTree<K,V,F>::insert( K& key,  V& value){
         typename BinaryTree<K,V,F>::Node* x = BinaryTree<K,V,F>::root;
         while(x != NIL){
             y = x;
-            if(this->cmp(z->entry.first , x->entry.first)){
+            if(this->cmp(key , x->entry.first)){
                 x = x->_left;
             }
             else {
                 x = x->_right;
             }
         }
-
         z->_parent = y;
         if(y == NIL){
            BinaryTree<K,V,F>::root = z; 
         }
-        else if(this->cmp(z->entry.first , x->entry.first))
+        else if(this->cmp(key , y->entry.first))
         {
             y->_left = z;
         }
@@ -117,6 +147,8 @@ void RedBlackTree<K,V,F>::insert( K& key,  V& value){
 
 template <class K, class V, class F >
 void RedBlackTree<K,V,F>::fix_insert_rbt(typename BinaryTree<K,V,F>::Node* z){
+
+    // fix the RB property going solving the 4 cases presented in the slides
     while(z->_parent->red){
         if(z->_parent == z->grandparent()->_left)
         {
@@ -167,8 +199,8 @@ void RedBlackTree<K,V,F>::fix_insert_rbt(typename BinaryTree<K,V,F>::Node* z){
 }
 
 template <class K, class V, class F>
-typename BinaryTree<K,V,F>::Node* RedBlackTree<K,V,F>::find_node(K& key){
-    
+typename BinaryTree<K,V,F>::Node* RedBlackTree<K,V,F>::find_node(const K& key){
+    // find a node with a given key
     typename BinaryTree<K,V,F>::Node* x = BinaryTree<K,V,F>::root;
     while(x != NIL){
             if(this->cmp(key, x->entry.first)){
@@ -186,62 +218,61 @@ typename BinaryTree<K,V,F>::Node* RedBlackTree<K,V,F>::find_node(K& key){
 
 template <class K, class V, class F>
 
-V& RedBlackTree<K,V,F>::remove( K& key){
+const V& RedBlackTree<K,V,F>::remove( const K& key){
     typename BinaryTree<K,V,F>::Node* node = find_node(key);
-        printTree(BinaryTree<K,V,F>::root);
-
-    if(node != NIL)
+    const V& ret = node->entry.second;
+    if(node != NIL){
         remove(node);
-    return node->entry.second;
+    }
+    return ret;
  }
 
 template <class K, class V, class F>
 void  RedBlackTree<K,V,F>::remove( typename BinaryTree<K,V,F>::Node* node ){
-    typename BinaryTree<K,V,F>::Node* y = node;
-    bool red_orig = y->red;
+    // it's basically similar to the Binary tree remove
+    // but this time I have also to take care of the colors
+    typename BinaryTree<K,V,F>::Node* y;
     typename BinaryTree<K,V,F>::Node* x;
-    if(node->_right == NIL){
-        x = node->_left;
-        BinaryTree<K,V,F>::transplant(node, node->_left);
-    }
-    else if(node->_left == NIL){
-        x = node->_right;
-        BinaryTree<K,V,F>::transplant(node, node->_right);
-
+    if(node->_left == NIL || node->_right == NIL){
+        y = node;
     }
     else{
-        y = first_node(node->_right);
-        red_orig = y->red;
+        y = first_node(node);
+    }
+    if(y->_left != NIL){
+        x = y->_left;
+    }
+    else{
         x = y->_right;
-        if(y->_parent == node){
-            x->_parent = y;
+    }
+    x->_parent = y->_parent;
+    if(y->_parent == NIL){
+        BinaryTree<K,V,F>::root = x;
+    }
+    else{
+        if(y == y->_parent->_left){
+            x->_parent->_left = x;
         }
         else{
-            BinaryTree<K,V,F>::transplant(y, y->_right);
-            y->_right = node->_right;
-            y->_right->_parent = y;
+            y->_parent->_right = x;
         }
-        BinaryTree<K,V,F>::transplant(node,y);
-        y->_left = node->_left;
-        y->_left->_parent = y;
-        y->red = node->red;
-
-       
     }
-    NIL->_parent = node->_parent;
-
-    if(!red_orig) fix_remove_rbt(x);
-
+    if(y != node){
+        node = y;
+    }
+    if(!y->red)
+       fix_remove_rbt(x);
+    delete y;
 }
 
 template <class K, class V, class F >
 void RedBlackTree<K,V,F>::fix_remove_rbt(typename BinaryTree<K,V,F>::Node* x){
    
+    // fix the RB property going solving the 4 cases presented in the slides
     while( x != BinaryTree<K,V,F>::root && !x->red){
         if(x == x->_parent->_left){
            typename BinaryTree<K,V,F>::Node* w = x->_parent->_right;
                     
-           std::cout << (x) << std::endl;
 
            if(w->red){
                // case 1
@@ -259,25 +290,26 @@ void RedBlackTree<K,V,F>::fix_remove_rbt(typename BinaryTree<K,V,F>::Node* x){
                w->red = true;
                x = x->_parent;
            } 
-           else if(!w->_right->red){
-               // case 3
+           else{ 
+            if(!w->_right->red){
+                // case 3
 
-                   w->_left->red = false;
-                   w->red = true;
-                   right_rotate(w); 
-                   w = x->_parent->_right;
-               }
-               // case 4
+                    w->_left->red = false;
+                    w->red = true;
+                    right_rotate(w); 
+                    w = x->_parent->_right;
+                }
+                // case 4
 
-            w->red = x->_parent->red;
-            x->_parent->red=false;
-            w->_right->red = false;
-        
-            left_rotate(x->_parent);
-            x = BinaryTree<K, V, F>::root;
-           
+                w->red = x->_parent->red;
+                x->_parent->red=false;
+                w->_right->red = false;
+            
+                left_rotate(x->_parent);
+                x = BinaryTree<K, V, F>::root;
+           }
         }
-        else{
+        else {
             typename BinaryTree<K,V,F>::Node* w = x->_parent->_left;
             if(w->red){
                // case 1
@@ -291,20 +323,21 @@ void RedBlackTree<K,V,F>::fix_remove_rbt(typename BinaryTree<K,V,F>::Node* x){
                 w->red = true;
                 x = x->_parent;
            } 
-            else if( !w->_left->red){
-                // case 3
-                   w->_right->red = false;
-                   w->red = true;
-                   left_rotate(w); 
+            else{ 
+                if( !w->_left->red){
+                    // case 3
+                    w->_right->red = false;
+                    w->red = true;
+                    left_rotate(w); 
                     w = x->_parent->_left;
-               }
-            // case 4
-            w->red = x->_parent->red;
-            x->_parent->red=false;
-            w->_left->red = false;
-            right_rotate(x->_parent);
-            x = BinaryTree<K, V, F>::root;
-        
+                }
+                // case 4
+                w->red = x->_parent->red;
+                x->_parent->red=false;
+                w->_left->red = false;
+                right_rotate(x->_parent);
+                x = BinaryTree<K, V, F>::root;
+            }
             
         }
     }
@@ -316,13 +349,18 @@ void RedBlackTree<K,V,F>::fix_remove_rbt(typename BinaryTree<K,V,F>::Node* x){
 template <class K, class V, class F>
 int RedBlackTree<K,V,F>::blackHeight(typename BinaryTree<K,V,F>::Node* node)
 {
+    // if I'm NIL means I'm a black leave 
     if(node == NIL )
-        return 0;
+        return 1;
+    // get the left and right heights
     int lheight = blackHeight(node->_left);
     int rheight = blackHeight(node->_right);
+    // If I'm black I would contribute instead not
     int add = node->red == true ? 0 : 1;
+    // if the black height is not equal return -1
     if(lheight == -1 || rheight == -1 || lheight != rheight )
         return -1;
+    // else return my subtree black height
     else return add + lheight;
 
 
@@ -331,27 +369,29 @@ int RedBlackTree<K,V,F>::blackHeight(typename BinaryTree<K,V,F>::Node* node)
 template <class K, class V, class F>
 bool RedBlackTree<K,V,F>::isRBvalid(typename BinaryTree<K,V,F>::Node* node){
 
-        return blackHeight(BinaryTree<K, V, F>::root) != -1;
+    return blackHeight(BinaryTree<K, V, F>::root) != -1;
 }
 
 
 template<class K, class V, class F>
 void RedBlackTree<K,V,F>::printTree(typename BinaryTree<K,V,F>::Node* root)  
 {  
+    // function to print the levels
     if (root == NIL) return;  
   
     std::queue<typename BinaryTree<K,V,F>::Node *> q;  
   
     q.push(root);  
-  
+    // use a queue to get all the node of a level
+    // while is no empty
     while (q.empty() == false)  
     {  
-        
+        // number of node in a level
         int nodeCount = q.size();  
-  
     
         while (nodeCount > 0) 
         {  
+            // print the nodes and push the children in the queue
             typename BinaryTree<K,V,F>::Node* node = q.front();  
             std::cout << node->entry.first << " ";  
             q.pop();  
@@ -369,11 +409,19 @@ void RedBlackTree<K,V,F>::printTree(typename BinaryTree<K,V,F>::Node* root)
 template <class K, class V, class F>
 typename BinaryTree<K,V,F>::Node* RedBlackTree<K,V,F>::first_node(typename BinaryTree<K,V,F>::Node* node) 
 {
-    if(node == NIL)
-        node = this->root;
     //find the leftmost node
     while(node->_left != NIL)
         node = node->_left;
     return node;
+}
+
+
+template <class K, class V, class F>
+void RedBlackTree<K,V,F>::destroy(typename BinaryTree<K,V,F>::Node* node){
+            if(node == NIL || node == nullptr) return;
+            if(node->_right != NIL) destroy(node->_right);
+            if(node->_left != NIL) destroy(node->_left);
+            delete node;
+
 }
 #endif //__RB_TREE__

@@ -24,7 +24,7 @@ vector* buckets_initialize(int dim){
     return res;
 }
 
-// resize of a factor of 2 every time I'm out of bound
+// resize of a factor of 2
 void resize(vector* vec){
     float *new_array = malloc(sizeof(float)*vec->real_dim*2);
     for(int i = 0; i < vec->real_dim; i++)
@@ -35,6 +35,8 @@ void resize(vector* vec){
     vec->array = new_array;
     free(tmp);
 }
+
+// append a new value and resize if I'm out of bound
 void append(vector* vec, float elem){
     if(vec->i == vec->real_dim - 1)
         resize(vec);
