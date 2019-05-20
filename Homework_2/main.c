@@ -10,6 +10,7 @@
 int main(){
     int mat_num;
     struct timespec b_time, e_time;
+    // store S and M
     int*** final_mtrx = (int***) malloc(sizeof(int**) * 2);
     int k;
     while(scanf("%d", &mat_num) == 1){
@@ -37,7 +38,7 @@ int main(){
         printf("\n");
         printf("Maximum number of multiplication = %d \n", final_mtrx[0][0][mat_num-1]);
         
-        //allocate space for the matrice, fill them
+        //allocate space for the matrices, fill them
         float***  tensor1 = (float***) malloc(sizeof(float**) * mat_num);
         float***  tensor2 = (float***) malloc(sizeof(float**) * mat_num);
         for(int i = 0; i < mat_num; i++){
@@ -52,11 +53,13 @@ int main(){
         float** result2 = allocate_matrix_f(dim_array[0], dim_array[mat_num]);
 
         clock_gettime(CLOCK_REALTIME, &b_time);
+        // non optimal parenthesis
         multiply_rec(result1, tensor1, final_mtrx[1], dim_array,0, mat_num-1,1);
         clock_gettime(CLOCK_REALTIME, &e_time);
         printf("Serial multiplication\t%lf\n",get_execution_time(b_time, e_time));
         
         clock_gettime(CLOCK_REALTIME, &b_time);
+        // optmila parenthesis
         multiply_rec(result2, tensor2, final_mtrx[1], dim_array,0, mat_num-1,0);
         clock_gettime(CLOCK_REALTIME, &e_time);
         printf("Optimal multiplication\t%lf\n",get_execution_time(b_time, e_time));

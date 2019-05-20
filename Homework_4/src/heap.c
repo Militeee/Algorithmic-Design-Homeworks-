@@ -38,6 +38,7 @@ int is_valid_node(min_heap* hp, size_t node){
     return hp->n >= node;
 }
 
+// just get the first occurrence
 int min_heap_minimum(min_heap* hp){
     return hp->array[get_root()];
 }
@@ -113,7 +114,7 @@ void min_heap_insert(min_heap* hp, int value){
     decrease_key_min_heap(hp,hp->n,value);
 }
 
-
+//simply print the array
 void print_min_heap(min_heap* hp){
     print_array(hp->array, hp->n + 1);
 }

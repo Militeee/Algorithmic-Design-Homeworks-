@@ -2,7 +2,7 @@
 #include <ctime>
 #include <cstdlib>
 #include "dijkstra.h"
-#define LIM 1000
+#define LIM 10000
 
 int main(){
     struct timespec b_time, e_time;

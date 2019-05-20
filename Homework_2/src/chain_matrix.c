@@ -7,7 +7,7 @@
 
 
 
-// fiils the m and s matrix with the optimal subsequence multiplication ost
+// fiils the m and s matrix with the optimal subsequence (dynamic programming step)
 
 void matrixChainAux(int* P, int** m, int** s, size_t i, size_t j){
     m[i][j] = INFINITY;

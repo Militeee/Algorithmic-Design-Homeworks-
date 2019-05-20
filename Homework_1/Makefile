@@ -1,10 +1,10 @@
-SRC = improved_strassen.c main.c matrix.c strassen.c
+SRC = src/improved_strassen.c main.c src/matrix.c src/strassen.c
 
-all: strassen.x
+all: main.x
 
 main.x:  $(SRC)
-	gcc -O3 $^ -o $@
+	gcc -O3 -I include $^ -o $@
 
 clean:
-	@rm -rf *~ */*~ strassen.x
+	@rm -rf *~ */*~ main.x
 

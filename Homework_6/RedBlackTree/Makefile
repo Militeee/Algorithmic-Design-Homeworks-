@@ -1,5 +1,5 @@
 all:
-	g++ RB_main.cpp -o main.x
+	g++ -O3 RB_main.cpp -o main.x
 
 clean:
 	rm *.x
