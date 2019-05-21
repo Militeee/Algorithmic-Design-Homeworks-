@@ -2,23 +2,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int naive_matrix_mult(float **C,
-                        float **A,
-                        float **B,
-                        const size_t A_rows,
-                        const size_t A_cols,
-                        const size_t B_rows,
-                        const size_t B_cols);
+int
+naive_matrix_mult(float** C,
+                  float** A,
+                  float** B,
+                  const size_t A_rows,
+                  const size_t A_cols,
+                  const size_t B_rows,
+                  const size_t B_cols);
 
-float **allocate_matrix(const size_t rows,
-                        const size_t cols);
+float**
+allocate_matrix(const size_t rows, const size_t cols);
 
-void deallocate_matrix(float **A, const size_t rows);
+void
+deallocate_matrix(float** A, const size_t rows);
 
-int same_matrix(float **A, const size_t A_rows, const size_t A_cols,
-		float **B, const size_t B_rows, const size_t B_cols);
+int
+same_matrix(float** A,
+            const size_t A_rows,
+            const size_t A_cols,
+            float** B,
+            const size_t B_rows,
+            const size_t B_cols);
 
-void print_matrix_2(float ** m, int size, int size2);
-
+void
+print_matrix_2(float** m, int size, int size2);
 
 #endif // __MATRIX__

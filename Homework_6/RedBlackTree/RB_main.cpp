@@ -8,7 +8,9 @@
 #include <vector>
 #define LIM 30
 
-int main(int arcv, char *argv[]) {
+int
+main(int arcv, char* argv[])
+{
   std::srand(LIM);
   std::vector<int> random;
   for (int i = 0; i < LIM; i++)
